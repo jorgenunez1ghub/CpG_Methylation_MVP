@@ -1,0 +1,52 @@
+# FAC-P/PM Mid-Level Mapping — Evidence from CpG_Methylation_MVP
+
+## Overview
+This repository demonstrates end-to-end project delivery for a data-driven MVP: requirements definition, risk management, implementation oversight, deployment readiness, and stakeholder communication via a repeatable demo.
+
+---
+
+## Competency-to-Evidence Map
+
+### 1) Requirements / Scope Management
+**Evidence:**
+- `docs/one_pager.md` defines problem, users, scope, out-of-scope, and success criteria.
+- Streamlit app workflow enforces a clear user journey (upload → map columns → threshold → results → export).
+
+### 2) Schedule / Delivery Management
+**Evidence:**
+- Repo structure supports iterative delivery (MVP now; enhancements listed in one-pager “Next Iteration Ideas”).
+- Small, deployable increments (code + requirements + runtime + docs) demonstrate phased delivery.
+
+### 3) Risk Management (incl. privacy/safety)
+**Evidence:**
+- `docs/risk_register.md` identifies privacy, misuse, and reliability risks with mitigations.
+- App includes disclaimers and avoids clinical claims (educational framing).
+
+### 4) Quality Management / Verification
+**Evidence:**
+- Schema checks + column mapping reduce user error.
+- Data cleaning (numeric coercion + invalid row handling) improves reliability.
+- Exportable outputs support traceability and review.
+
+### 5) Stakeholder Communication
+**Evidence:**
+- `docs/demo_script.md` provides a consistent, time-boxed briefing.
+- README (and in-app guidance) supports onboarding and self-service use.
+
+### 6) Technical Management / Solution Oversight
+**Evidence:**
+- Implementation demonstrates tool selection and architecture decisions (Streamlit + Pandas).
+- `requirements.txt` and `runtime.txt` support environment reproducibility and deployment readiness.
+
+### 7) Governance / Responsible Use
+**Evidence:**
+- Explicit disclaimers (educational only; not medical advice).
+- Controls designed to prevent overreach (rule-based MVP; no automatic medical guidance).
+
+---
+
+## Deliverable Set (What a reviewer can click)
+- Working app: `dna_methylation_app.py`
+- Reproducibility: `requirements.txt`, `runtime.txt`
+- PM artifacts: `/docs/*`
+- Demo walkthrough: `docs/demo_script.md`
