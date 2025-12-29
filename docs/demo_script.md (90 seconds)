@@ -1,0 +1,20 @@
+# Demo Script (90 seconds) — CpG_Methylation_MVP
+
+## Goal
+Show an end-to-end “upload → insight → export” workflow that demonstrates MVP delivery, usability, and guardrails.
+
+## Talk Track
+**0–10s — Context**
+“Here’s a lightweight MVP that helps interpret a methylation-related CSV. It’s an educational decision-support demo — not medical advice — focused on turning messy data into a readable summary quickly.”
+
+**10–30s — Upload + Preview**
+“I upload a CSV. The app previews the data immediately and shows the expected schema. If column names don’t match, I can map columns without editing the source file.”
+
+**30–55s — Controls + Results**
+“I set a threshold for ‘high methylation.’ The app cleans non-numeric values, warns me about any dropped rows, then flags records above the threshold. Results are sortable and easy to scan.”
+
+**55–75s — Rollups**
+“Next, it creates a gene-level rollup — top genes by mean methylation — so I can see patterns beyond individual rows.”
+
+**75–90s — Export + Close**
+“Finally, I can download two deliverables: a CSV of flagged rows and a simple report for documentation. This demonstrates a complete MVP loop with guardrails, reproducibility, and clear next steps for future iterations.”
