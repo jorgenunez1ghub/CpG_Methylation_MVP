@@ -29,4 +29,4 @@ Minimum expected fields (column names can be mapped in the UI):
 ## Run locally
 1) Install dependencies:
 ```bash
-pip install -r requirements.txt
+streamlit run app.py
