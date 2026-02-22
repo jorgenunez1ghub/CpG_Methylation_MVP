@@ -1,25 +1,25 @@
-"""Streamlit app entrypoint for CpG methylation ingestion MVP."""
+"""Streamlit entrypoint for CpG methylation MVP."""
 
 from __future__ import annotations
 
 from io import BytesIO
+from pathlib import Path
+import sys
 
 import streamlit as st
 
-from core.ingest import IngestError, load_methylation_file, qc_summary
+ROOT_DIR = Path(__file__).resolve().parents[1]
+if str(ROOT_DIR) not in sys.path:
+    sys.path.insert(0, str(ROOT_DIR))
 
-st.set_page_config(page_title="CpG Methylation MVP", layout="wide")
-st.title("CpG Upload → Parse → Normalize")
+from core.analyze import qc_summary
+from core.config import APP_CAPTION, APP_DESCRIPTION, APP_LAYOUT, APP_TITLE, PAGE_TITLE
+from core.ingest import IngestError, load_methylation_file
 
-st.caption(
-    "Educational demo only. Not medical advice. "
-    "No raw upload data is logged or displayed outside your session."
-)
-
-st.markdown(
-    "Upload a **CSV or TSV** containing CpG methylation values. "
-    "The app validates and normalizes your data into a canonical schema for downstream analysis."
-)
+st.set_page_config(page_title=PAGE_TITLE, layout=APP_LAYOUT)
+st.title(APP_TITLE)
+st.caption(APP_CAPTION)
+st.markdown(APP_DESCRIPTION)
 
 uploaded_file = st.file_uploader(
     "Upload methylation results file",
