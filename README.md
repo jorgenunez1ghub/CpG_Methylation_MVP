@@ -1,44 +1,48 @@
 # CpG_Methylation_MVP
 
-A lightweight **Streamlit** MVP for methylation ingestion:
-**upload → parse → validate → normalize → QC summary**.
+Lightweight Streamlit MVP for CpG methylation upload, validation, normalization, and QC.
 
-> **Disclaimer:** Educational demo only. Not medical advice. This tool does not diagnose, treat, or prevent disease. Consult a qualified clinician for medical interpretation.
+> **Disclaimer:** Educational demo only. Not medical advice.
 
-## What this MVP does
-- Upload a methylation input file (`.csv` or `.tsv`)
-- Auto-detect delimiter and parse tabular data
-- Validate required fields and data quality (missing columns, non-numeric beta, range checks)
-- Normalize into canonical columns for downstream analysis:
-  - `cpg_id`, `beta`
-  - optional: `chrom`, `pos`, `gene`, `pval`
-  - metadata: `source_file`, `uploaded_at`
-- Store normalized data in `st.session_state["normalized_df"]`
-- Display quick QC metrics and beta distribution
+## What it does
+- Uploads CpG methylation files (`.csv`, `.tsv`, `.txt`) through Streamlit UI.
+- Validates schema and value quality (required columns, numeric beta values, range checks).
+- Normalizes parsed input into a canonical table (`cpg_id`, `beta`, optional metadata columns).
+- Shows quick QC outputs (row counts, unique CpGs, beta statistics, simple chart).
 
-## Upload format supported
-- **Required columns:**
-  - `cpg_id` (or alias like `CpG`, `probe_id`)
-  - `beta` (or alias like `Beta`, `methylation_level`)
-- **Optional columns:** `chrom`, `pos`, `gene`, `pval`
-- **Rules:**
-  - `beta` must be numeric and in `[0, 1]`
-  - file must include a header row and at least one data row
-
-A sample input is available at: `data/sample/methylation_sample.csv`.
-
-## Run locally
-1. Install dependencies:
+## Quickstart
 ```bash
+python -m venv .venv
+source .venv/bin/activate
 pip install -r requirements.txt
+cp .env.example .env
+streamlit run app/main.py
 ```
 
-2. Start the app:
-```bash
-streamlit run app.py
-```
+## Config
+Environment variables (see `.env.example`):
+- `APP_PAGE_TITLE`: browser tab title.
+- `APP_TITLE`: heading at top of app.
+- `APP_LAYOUT`: Streamlit layout (`wide` or `centered`).
+- `APP_CAPTION`: top disclaimer/caption text.
+- `APP_DESCRIPTION`: intro markdown under title.
+- `OPENAI_API_KEY`, `RAG_EMBEDDING_MODEL`: placeholders for future integrations.
+
+## Repo structure
+- `app/`: Streamlit UI entrypoint and pages (UI orchestration only).
+- `core/`: business logic modules (ingest, validate, analyze, config).
+- `tests/`: fast smoke tests for core functions.
+- `docs/`: project notes and artifacts.
+- `.env.example`: safe configuration template.
+
+## Demo flow
+1. Run `streamlit run app/main.py`.
+2. Upload `data/sample/methylation_sample.csv`.
+3. Confirm success message after parse/normalize.
+4. Inspect normalized table and QC metric cards.
+5. Verify beta chart renders expected distribution.
 
 ## Run tests
 ```bash
-python -m unittest discover -s tests -v
+pytest -q
 ```
