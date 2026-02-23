@@ -12,8 +12,16 @@ ROOT_DIR = Path(__file__).resolve().parents[1]
 if str(ROOT_DIR) not in sys.path:
     sys.path.insert(0, str(ROOT_DIR))
 
-from core import IngestError, analyze_methylation, load_methylation_file
-from core.config import APP_CAPTION, APP_DESCRIPTION, APP_LAYOUT, APP_TITLE, PAGE_TITLE
+from core import (
+    APP_CAPTION,
+    APP_DESCRIPTION,
+    APP_LAYOUT,
+    APP_TITLE,
+    PAGE_TITLE,
+    IngestError,
+    analyze_methylation,
+    load_methylation_file,
+)
 
 st.set_page_config(page_title=PAGE_TITLE, layout=APP_LAYOUT)
 st.title(APP_TITLE)
