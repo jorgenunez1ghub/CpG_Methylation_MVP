@@ -1,0 +1,27 @@
+[build-system]
+requires = ["setuptools", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "cpg-methylation-mvp"
+version = "0.1.0"
+description = "Lightweight Streamlit MVP for CpG methylation upload, validation, normalization, and QC."
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+  "streamlit",
+  "pandas",
+  "tabulate",
+]
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+
+[tool.setuptools.packages.find]
+where = ["src"]
+include = ["cpg_methylation_mvp*"]
+
+[project.optional-dependencies]
+dev = [
+  "pytest",
+]

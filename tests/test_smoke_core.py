@@ -2,7 +2,12 @@ from io import BytesIO
 
 import pandas as pd
 
-from core import analyze_methylation, load_methylation_file, normalize_upload, validate_upload
+from cpg_methylation_mvp.core import (
+    analyze_methylation,
+    load_methylation_file,
+    normalize_upload,
+    validate_upload,
+)
 
 
 def test_load_methylation_file_smoke() -> None:

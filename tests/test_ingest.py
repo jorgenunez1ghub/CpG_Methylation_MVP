@@ -1,7 +1,7 @@
 from io import BytesIO
 import unittest
 
-from core.ingest import IngestError, load_methylation_file
+from cpg_methylation_mvp.core.ingest import IngestError, load_methylation_file
 
 
 class TestIngest(unittest.TestCase):

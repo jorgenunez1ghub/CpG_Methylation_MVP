@@ -1,6 +1,6 @@
 import pandas as pd
 
-from core.transform import canonicalize_columns, select_canonical_columns
+from cpg_methylation_mvp.core.transform import canonicalize_columns, select_canonical_columns
 
 
 def test_canonicalize_columns_aliases() -> None:

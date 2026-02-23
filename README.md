@@ -16,7 +16,7 @@ Lightweight Streamlit MVP for CpG methylation upload, validation, normalization,
 ```bash
 python -m venv .venv
 source .venv/bin/activate
-pip install -r requirements.txt
+pip install -e .
 cp .env.example .env
 streamlit run app/main.py
 ```
@@ -30,15 +30,21 @@ Environment variables (see `.env.example`):
 - `APP_DESCRIPTION`: intro markdown under title.
 - `OPENAI_API_KEY`, `RAG_EMBEDDING_MODEL`: placeholders for future integrations.
 
+
+## Python package layout
+- Uses a `src/` layout with import path `cpg_methylation_mvp.*`.
+- App imports public logic from `cpg_methylation_mvp.core`.
+- Install editable from repo root with `pip install -e .`.
+
 ## Repo structure
 - `app/`: Streamlit UI entrypoint and pages (UI orchestration only).
   - `app/main.py`: single entrypoint.
   - `app/pages/`: optional multipage views.
-- `core/`: business logic modules.
-  - `core/io.py`: file byte parsing and delimiter handling.
-  - `core/transform.py`: canonical schema mapping and column selection.
-  - `core/validate.py`: schema and value checks.
-  - `core/analyze.py`: QC metric helpers.
+- `src/cpg_methylation_mvp/core/`: business logic modules.
+  - `io.py`: file byte parsing and delimiter handling.
+  - `transform.py`: canonical schema mapping and column selection.
+  - `validate.py`: schema and value checks.
+  - `analyze.py`: QC metric helpers.
 - `tests/`: fast smoke tests for core functions.
 - `docs/`: project notes and decision artifacts.
 - `.env.example`: safe configuration template.
@@ -46,8 +52,8 @@ Environment variables (see `.env.example`):
 
 ## Architecture guardrails
 - `app/` contains Streamlit UI only.
-- `core/` contains framework-agnostic business logic and **must not import Streamlit**.
-- UI copy/config lives in `app/ui_config.py`, not in `core/`.
+- `cpg_methylation_mvp.core` contains framework-agnostic business logic and **must not import Streamlit**.
+- UI copy/config lives in `app/ui_config.py`, not in package core modules.
 
 ## Demo flow
 1. Run `streamlit run app/main.py`.
