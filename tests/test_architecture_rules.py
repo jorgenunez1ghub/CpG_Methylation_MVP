@@ -5,7 +5,7 @@ REPO_ROOT = Path(__file__).resolve().parents[1]
 
 
 def test_core_modules_do_not_import_streamlit() -> None:
-    core_dir = REPO_ROOT / "core"
+    core_dir = REPO_ROOT / "src" / "cpg_methylation_mvp" / "core"
     violations: list[str] = []
 
     for path in core_dir.glob("*.py"):
@@ -19,4 +19,4 @@ def test_core_modules_do_not_import_streamlit() -> None:
 def test_streamlit_app_uses_public_core_api() -> None:
     app_source = (REPO_ROOT / "app" / "main.py").read_text(encoding="utf-8")
 
-    assert "from core.config import" not in app_source
+    assert "from cpg_methylation_mvp.core.config import" not in app_source

@@ -7,9 +7,9 @@ from typing import BinaryIO
 
 import pandas as pd
 
-from core.io import read_table_bytes
-from core.transform import normalize_upload
-from core.validate import (
+from .io import read_table_bytes
+from .transform import normalize_upload
+from .validate import (
     ValidationError,
     ensure_non_empty_dataframe,
     validate_upload,

@@ -1,9 +1,9 @@
 """Public core API for app orchestration."""
 
-from core.analyze import analyze_methylation, qc_summary
-from core.ingest import IngestError, load_methylation_file
-from core.transform import canonicalize_columns, normalize_upload, select_canonical_columns
-from core.validate import ValidationError, ValidationConfig, validate_upload
+from .analyze import analyze_methylation, qc_summary
+from .ingest import IngestError, load_methylation_file
+from .transform import canonicalize_columns, normalize_upload, select_canonical_columns
+from .validate import ValidationError, ValidationConfig, validate_upload
 
 __all__ = [
     "IngestError",

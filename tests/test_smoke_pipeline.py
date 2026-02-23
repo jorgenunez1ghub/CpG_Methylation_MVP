@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import pandas as pd
 
-from core import analyze_methylation
+from cpg_methylation_mvp.core import analyze_methylation
 
 
 def test_analyze_methylation_summary_keys() -> None:

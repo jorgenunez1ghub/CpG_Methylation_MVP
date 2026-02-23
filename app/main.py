@@ -3,18 +3,11 @@
 from __future__ import annotations
 
 from io import BytesIO
-from pathlib import Path
-import sys
-
 import pandas as pd
 import streamlit as st
 
-ROOT_DIR = Path(__file__).resolve().parents[1]
-if str(ROOT_DIR) not in sys.path:
-    sys.path.insert(0, str(ROOT_DIR))
-
 from app.ui_config import APP_CAPTION, APP_DESCRIPTION, APP_LAYOUT, APP_TITLE, PAGE_TITLE
-from core import IngestError, analyze_methylation, load_methylation_file
+from cpg_methylation_mvp.core import IngestError, analyze_methylation, load_methylation_file
 
 
 @st.cache_data(show_spinner=False)
