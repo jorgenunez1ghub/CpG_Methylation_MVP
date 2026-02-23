@@ -1,4 +1,4 @@
-"""Configuration values loaded from environment with safe defaults."""
+"""UI configuration values loaded from environment with safe defaults."""
 
 from __future__ import annotations
 
