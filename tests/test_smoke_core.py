@@ -2,8 +2,7 @@ from io import BytesIO
 
 import pandas as pd
 
-from core.analyze import qc_summary
-from core.ingest import load_methylation_file
+from core import analyze_methylation, load_methylation_file, normalize_upload, validate_upload
 
 
 def test_load_methylation_file_smoke() -> None:
@@ -14,10 +13,13 @@ def test_load_methylation_file_smoke() -> None:
     assert len(df) == 2
 
 
-def test_qc_summary_smoke() -> None:
-    df = pd.DataFrame({"cpg_id": ["cg1", "cg2", "cg2"], "beta": [0.1, 0.5, 0.9]})
-    summary = qc_summary(df)
+def test_validate_transform_analyze_smoke() -> None:
+    raw = pd.DataFrame({"CpG": ["cg1", "cg2"], "Beta": [0.1, 0.9], "chr": ["chr1", "chr2"]})
 
-    assert summary["row_count"] == 3.0
+    normalized = normalize_upload(raw)
+    validated = validate_upload(normalized)
+    summary = analyze_methylation(validated)
+
+    assert list(normalized.columns) == ["cpg_id", "beta", "chrom"]
+    assert summary["row_count"] == 2.0
     assert summary["unique_cpg"] == 2.0
-    assert summary["beta_min"] == 0.1

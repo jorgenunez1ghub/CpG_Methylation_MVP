@@ -61,3 +61,23 @@ def ensure_beta_in_range(df: pd.DataFrame, beta_column: str = "beta") -> None:
             f"Found {out_of_range_count} beta value(s) outside [0, 1]. "
             "Fix out-of-range values and re-upload."
         )
+
+
+
+def validate_upload(
+    df: pd.DataFrame,
+    config: ValidationConfig | None = None,
+) -> pd.DataFrame:
+    """Validate normalized upload dataframe and return validated copy."""
+    cfg = config or ValidationConfig()
+    ensure_non_empty_dataframe(df)
+    ensure_required_columns(df, cfg.required_columns)
+
+    validated = df.copy()
+    validated["cpg_id"] = validated["cpg_id"].astype(str).str.strip()
+
+    ensure_beta_numeric(validated, beta_column="beta")
+    validated["beta"] = pd.to_numeric(validated["beta"], errors="coerce")
+    ensure_non_empty_dataframe(validated.dropna(subset=["cpg_id", "beta"]))
+    ensure_beta_in_range(validated, beta_column="beta")
+    return validated

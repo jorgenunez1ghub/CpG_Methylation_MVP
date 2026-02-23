@@ -208,3 +208,7 @@ __marimo__/
 
 *.env
 .venv/
+
+# Project data hygiene
+data/raw/
+data/output/

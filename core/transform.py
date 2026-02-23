@@ -42,3 +42,10 @@ def select_canonical_columns(df: pd.DataFrame) -> pd.DataFrame:
     """Keep canonical columns that are present, in canonical order."""
     keep_columns = [column for column in CANONICAL_COLUMNS if column in df.columns]
     return df[keep_columns].copy()
+
+
+
+def normalize_upload(df: pd.DataFrame) -> pd.DataFrame:
+    """Canonicalize columns and keep canonical subset."""
+    normalized = canonicalize_columns(df)
+    return select_canonical_columns(normalized)
