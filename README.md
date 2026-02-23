@@ -5,7 +5,7 @@ Lightweight Streamlit MVP for CpG methylation upload, validation, normalization,
 > **Disclaimer:** Educational demo only. Not medical advice.
 
 ## What it does
-- Uploads CpG methylation files (`.csv`, `.tsv`, `.txt`) through Streamlit UI.
+- Uploads CpG methylation files (`.csv`, `.tsv`, `.txt`) through a Streamlit UI.
 - Validates schema and value quality (required columns, numeric beta values, range checks).
 - Normalizes parsed input into a canonical table (`cpg_id`, `beta`, optional metadata columns).
 - Shows quick QC outputs (row counts, unique CpGs, beta statistics, simple chart).
@@ -30,9 +30,16 @@ Environment variables (see `.env.example`):
 
 ## Repo structure
 - `app/`: Streamlit UI entrypoint and pages (UI orchestration only).
-- `core/`: business logic modules (ingest, validate, analyze, config).
+  - `app/main.py`: single entrypoint.
+  - `app/pages/`: optional multipage views.
+- `core/`: business logic modules.
+  - `core/io.py`: file byte parsing and delimiter handling.
+  - `core/transform.py`: canonical schema mapping and column selection.
+  - `core/validate.py`: schema and value checks.
+  - `core/analyze.py`: QC metric helpers.
+  - `core/config.py`: env-driven app config defaults.
 - `tests/`: fast smoke tests for core functions.
-- `docs/`: project notes and artifacts.
+- `docs/`: project notes and decision artifacts.
 - `.env.example`: safe configuration template.
 
 ## Demo flow
