@@ -12,13 +12,14 @@ ROOT_DIR = Path(__file__).resolve().parents[1]
 if str(ROOT_DIR) not in sys.path:
     sys.path.insert(0, str(ROOT_DIR))
 
-from core import IngestError, analyze_methylation, load_methylation_file
-from core.config import APP_CAPTION, APP_DESCRIPTION, APP_LAYOUT, APP_TITLE, PAGE_TITLE
+from core import IngestError, analyze_methylation, get_app_config, load_methylation_file
 
-st.set_page_config(page_title=PAGE_TITLE, layout=APP_LAYOUT)
-st.title(APP_TITLE)
-st.caption(APP_CAPTION)
-st.markdown(APP_DESCRIPTION)
+config = get_app_config()
+
+st.set_page_config(page_title=config.page_title, layout=config.app_layout)
+st.title(config.app_title)
+st.caption(config.app_caption)
+st.markdown(config.app_description)
 
 uploaded_file = st.file_uploader(
     "Upload methylation results file",
