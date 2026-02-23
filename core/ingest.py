@@ -8,13 +8,11 @@ from typing import BinaryIO
 import pandas as pd
 
 from core.io import read_table_bytes
-from core.transform import canonicalize_columns, select_canonical_columns
+from core.transform import normalize_upload
 from core.validate import (
-    ValidationConfig,
     ValidationError,
-    ensure_beta_in_range,
     ensure_non_empty_dataframe,
-    ensure_required_columns,
+    validate_upload,
 )
 
 
@@ -36,27 +34,10 @@ def load_methylation_file(uploaded_file: BinaryIO, source_name: str | None = Non
         parsed_df = read_table_bytes(raw_bytes=raw_bytes, filename=name)
         ensure_non_empty_dataframe(parsed_df)
 
-        normalized = canonicalize_columns(parsed_df)
-        ensure_required_columns(normalized, ValidationConfig().required_columns)
-
-        normalized = normalized.copy()
-        normalized["cpg_id"] = normalized["cpg_id"].astype(str).str.strip()
-
-        raw_beta = normalized["beta"]
-        numeric_beta = pd.to_numeric(raw_beta, errors="coerce")
-        invalid_count = int((numeric_beta.isna() & raw_beta.notna()).sum())
-        if invalid_count > 0:
-            raise IngestError(
-                f"Found {invalid_count} non-numeric beta value(s). "
-                "Beta values must be numeric between 0 and 1."
-            )
-
-        normalized["beta"] = numeric_beta
+        normalized = normalize_upload(parsed_df)
+        normalized = validate_upload(normalized)
         normalized = normalized.dropna(subset=["beta", "cpg_id"])
         ensure_non_empty_dataframe(normalized)
-        ensure_beta_in_range(normalized, beta_column="beta")
-
-        normalized = select_canonical_columns(normalized)
         normalized["source_file"] = "uploaded_file"
         normalized["uploaded_at"] = datetime.now(timezone.utc).isoformat()
 

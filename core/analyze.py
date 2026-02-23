@@ -17,3 +17,9 @@ def qc_summary(df: pd.DataFrame) -> dict[str, float]:
         "beta_median": float(beta.median()),
         "beta_max": float(beta.max()),
     }
+
+
+
+def analyze_methylation(df: pd.DataFrame) -> dict[str, float]:
+    """Run methylation analysis for app use (currently QC summary)."""
+    return qc_summary(df)
