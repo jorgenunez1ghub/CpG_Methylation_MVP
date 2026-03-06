@@ -101,7 +101,7 @@ These guardrails should remain true unless intentionally changed.
 - data hygiene rules may not yet be fully enforced
 - schema docs are not yet clearly visible as first-class repo assets
 - tests may exist but likely need expansion
-- no explicit `NEXT_STEPS.md` re-entry doc yet
+- companion `NEXT_STEPS.md` re-entry doc is not yet present
 - no explicit data dictionary / validation contract surfaced for external readers
 - future AI/RAG placeholders exist in config, but not yet implemented
 
