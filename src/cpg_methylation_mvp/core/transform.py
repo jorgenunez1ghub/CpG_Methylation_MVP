@@ -23,14 +23,19 @@ ALIASES: dict[str, tuple[str, ...]] = {
 }
 
 
+def _normalized_column_key(column: object) -> str:
+    """Normalize header text for resilient alias matching."""
+    return str(column).lstrip("\ufeff").strip().lower()
+
+
 def canonicalize_columns(df: pd.DataFrame) -> pd.DataFrame:
     """Map known aliases to canonical schema columns."""
-    lowered = {column.lower().strip(): column for column in df.columns}
+    lowered = {_normalized_column_key(column): column for column in df.columns}
     rename_map: dict[str, str] = {}
 
     for canonical, aliases in ALIASES.items():
         for alias in aliases:
-            alias_lower = alias.lower()
+            alias_lower = _normalized_column_key(alias)
             if alias_lower in lowered:
                 rename_map[lowered[alias_lower]] = canonical
                 break
