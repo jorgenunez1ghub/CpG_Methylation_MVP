@@ -28,17 +28,38 @@ def _normalized_column_key(column: object) -> str:
     return str(column).lstrip("\ufeff").strip().lower()
 
 
+def _alias_match_priority(column: object, canonical: str) -> tuple[int, str]:
+    """Rank matching columns so canonical headers win over BOM-prefixed variants."""
+    as_text = str(column)
+    stripped = as_text.strip()
+    normalized = _normalized_column_key(column)
+
+    if stripped == canonical:
+        return (0, normalized)
+    if normalized == canonical and not as_text.startswith("\ufeff"):
+        return (1, normalized)
+    if normalized == canonical:
+        return (2, normalized)
+    return (3, normalized)
+
+
 def canonicalize_columns(df: pd.DataFrame) -> pd.DataFrame:
     """Map known aliases to canonical schema columns."""
-    lowered = {_normalized_column_key(column): column for column in df.columns}
     rename_map: dict[str, str] = {}
 
     for canonical, aliases in ALIASES.items():
-        for alias in aliases:
-            alias_lower = _normalized_column_key(alias)
-            if alias_lower in lowered:
-                rename_map[lowered[alias_lower]] = canonical
-                break
+        candidates: list[object] = []
+        alias_keys = {_normalized_column_key(alias) for alias in aliases}
+
+        for column in df.columns:
+            if _normalized_column_key(column) in alias_keys:
+                candidates.append(column)
+
+        if not candidates:
+            continue
+
+        chosen = min(candidates, key=lambda column: _alias_match_priority(column, canonical))
+        rename_map[chosen] = canonical
 
     return df.rename(columns=rename_map)
 
