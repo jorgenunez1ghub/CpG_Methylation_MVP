@@ -34,6 +34,24 @@ class TestIngest(unittest.TestCase):
 
         self.assertIn("non-numeric beta", str(context.exception))
 
+    def test_utf8_bom_header_is_handled(self) -> None:
+        csv_payload = "\ufeffcpg_id,beta\ncg000001,0.45\n".encode("utf-8")
+
+        df = load_methylation_file(BytesIO(csv_payload), source_name="bom.csv")
+
+        self.assertEqual(len(df), 1)
+        self.assertIn("cpg_id", df.columns)
+        self.assertAlmostEqual(float(df.loc[0, "beta"]), 0.45)
+
+    def test_prefers_plain_canonical_header_over_bom_duplicate(self) -> None:
+        csv_payload = ("cpg_id," + "\ufeff" + "cpg_id,beta\ncg_plain,cg_bom,0.45\n").encode("utf-8")
+
+        df = load_methylation_file(BytesIO(csv_payload), source_name="duplicate_header.csv")
+
+        self.assertEqual(len(df), 1)
+        self.assertEqual(df.loc[0, "cpg_id"], "cg_plain")
+
+
 
 if __name__ == "__main__":
     unittest.main()
