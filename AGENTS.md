@@ -2,14 +2,16 @@
 
 ## Project identity
 
-This repository is for a CpG methylation analysis MVP with a UI layer and a clean analytical core.
+This repository is a lightweight Streamlit MVP for CpG methylation file upload, validation, normalization, and QC.
 
 Primary goals:
-- preserve a clean separation between UI and analysis logic,
-- support reliable file ingestion and QC,
-- keep outputs traceable and understandable,
-- make the repo easy to extend,
-- maintain scientifically cautious behavior.
+- preserve a clean separation between UI and analytical core logic,
+- support reliable file ingestion and transparent QC,
+- keep outputs inspectable and reproducible,
+- maintain scientifically cautious behavior,
+- keep the repo easy to extend into a stronger data or API workflow later.
+
+This project is an educational demo and is not medical advice.
 
 ## Operating priority
 
@@ -20,121 +22,164 @@ Optimize for:
 4. maintainable Python structure,
 5. user-facing clarity without overstating conclusions.
 
-Do not optimize for impressive-sounding biological claims or speculative interpretation.
+Do not optimize for speculative interpretation, impressive-sounding biological claims, or flashy UI at the expense of trust.
 
 ## Architecture rules
 
 Preserve the expected structure:
-- `app/` for Streamlit UI
-- `core/` for analysis logic, loaders, transformations, and reusable functions
-- `tests/` for import, parsing, and behavior checks
+- `app/` for Streamlit UI orchestration and caching wrappers
+- `app/ui_config.py` for UI text/config values
+- `src/cpg_methylation_mvp/core/` for framework-agnostic ingestion, validation, transformation, and analysis logic
+- `tests/` for import, parsing, normalization, and QC checks
 - `docs/` for notes, assumptions, data contracts, and design decisions
 
-Keep Streamlit-specific code out of `core/`.
+Keep Streamlit-specific code out of `src/cpg_methylation_mvp/core/`.
 
 Do not add UI dependencies to core modules.
 
+Do not move business logic into `app/main.py` beyond thin orchestration, cached wrappers, and display logic.
+
+## Public API stability
+
+Treat `cpg_methylation_mvp.core` as the public core surface for app orchestration.
+
+Be careful when changing exported names or behavior related to:
+- `IngestError`
+- `ValidationError`
+- `ValidationConfig`
+- `load_methylation_file`
+- `validate_upload`
+- `normalize_upload`
+- `analyze_methylation`
+- `qc_summary`
+
+Do not rename, remove, or silently repurpose public core API functions without updating tests and docs together.
+
 ## Data handling rules
 
-Treat uploaded methylation data as structured analytical input that may be messy, incomplete, or inconsistent.
+Treat uploaded methylation data as structured analytical input that may be messy, incomplete, inconsistent, or partially malformed.
 
-When working on loaders, parsing, or QC:
+When working on loaders, parsing, normalization, or QC:
 - prefer explicit validation,
 - preserve clear error messages,
 - handle malformed input conservatively,
-- surface missing fields clearly,
-- avoid silent coercion unless documented and intentional.
+- surface missing or invalid fields clearly,
+- avoid silent coercion unless documented and intentional,
+- preserve canonical schema expectations.
 
-If assumptions are required during parsing, state them in code comments or docs where appropriate.
+If assumptions are required during parsing or normalization, document them clearly in code or docs.
 
-## Scientific and interpretation guardrails
-
-This repo may discuss biomarkers, risk signals, or biological interpretation.
-Do not:
-- overclaim medical significance,
-- imply diagnosis,
-- present exploratory analysis as clinical fact,
-- invent domain rules,
-- hide uncertainty.
-
-Prefer wording and implementation that reflects:
-- analysis,
-- QC,
-- flags,
-- summaries,
-- candidate interpretations,
-- limitations.
-
-If a conclusion depends on domain knowledge not encoded in the repo, say so clearly.
-
-## Output expectations
+## QC and output rules
 
 Prefer outputs that are:
 - structured,
 - reproducible,
 - easy to inspect,
-- useful for future app/API migration.
+- useful for future app or API migration.
 
 Good patterns include:
-- JSON-friendly summaries,
-- tabular QC outputs,
-- clean intermediate objects,
-- analysis reports that separate findings from assumptions.
+- tabular QC summaries,
+- JSON-friendly summary objects,
+- clean intermediate dataframes,
+- reports that clearly separate findings, assumptions, and limitations.
 
-If cached functions or UI wrappers exist, preserve the boundary between wrapper behavior and core logic.
+Do not reduce transparency just to make output look cleaner.
+
+If changing QC behavior, preserve clarity around:
+- row counts,
+- unique CpGs,
+- missing beta values,
+- out-of-range values,
+- summary statistics,
+- simple distribution outputs.
+
+## Scientific and interpretation guardrails
+
+This repo may eventually discuss biomarkers, risk signals, or biological interpretation.
+
+Do not:
+- overclaim medical significance,
+- imply diagnosis,
+- present exploratory analysis as clinical fact,
+- invent scientific rules not encoded in the repo,
+- hide uncertainty or limitations,
+- blur educational analysis into health advice.
+
+Prefer wording and implementation that reflects:
+- validation,
+- QC,
+- summaries,
+- flags,
+- candidate interpretations,
+- limitations,
+- explicit uncertainty.
+
+If a conclusion depends on domain knowledge not encoded in the repo, say so clearly.
+
+## Streamlit and caching discipline
+
+Preserve the current boundary where caching and UI orchestration live in the Streamlit layer, while reusable logic stays in core modules.
+
+If editing cached flows:
+- keep cache wrappers thin,
+- avoid moving Streamlit decorators into core,
+- preserve representative app behavior for upload, normalization, and QC rendering,
+- verify app imports still work.
 
 ## Python implementation preferences
 
 - Prefer small, testable functions.
-- Use `pathlib`, typing, and clear return shapes where helpful.
+- Use explicit names, typing, and predictable return shapes where helpful.
 - Keep core code framework-agnostic.
 - Avoid hidden globals and side effects.
 - Prefer explicit configuration over scattered magic constants.
+- Avoid broad exception swallowing.
 
 ## Validation rules
 
 Before finishing:
-- run targeted tests for imports, parsing, and changed logic,
+- run the narrowest useful tests first,
 - check that app imports still work,
-- verify that core modules remain independent of Streamlit where expected,
-- validate representative input/output behavior if possible.
-
-If you change parsing or QC behavior, add or update a focused test.
+- verify that core modules remain independent of Streamlit,
+- validate representative input/output behavior when possible,
+- update or add a focused test if parsing, normalization, validation, or QC behavior changes.
 
 Never claim:
 - analysis validity without checking actual logic,
-- improved QC without showing what was changed,
-- framework independence if Streamlit leaked into core.
+- improved QC without showing what changed,
+- framework independence if Streamlit leaked into core,
+- a parsing fix without verifying a representative case.
 
 ## Documentation rules
 
 Update docs when changing:
 - input expectations,
 - file formats,
+- canonical schema assumptions,
 - QC outputs,
 - analysis flow,
 - architecture,
 - setup or run commands.
 
 Relevant docs may include:
-- README
+- `README.md`
 - design notes
-- data dictionaries
 - schema notes
 - implementation notes
+- data dictionaries
 
 Keep the repo understandable to a future maintainer.
 
 ## Change constraints
 
 Ask before:
-- adding large scientific or ML dependencies,
-- restructuring the app/core boundary broadly,
+- adding large scientific, ML, or biomedical dependencies,
+- broadly restructuring the app/core boundary,
 - changing file contracts in a breaking way,
 - deleting tests or docs tied to parsing/QC behavior,
-- introducing speculative analysis features.
+- introducing speculative interpretation features.
 
-Prefer targeted, incremental improvements.
+Prefer targeted, incremental improvements over rewrites.
 
 ## Final response format
 
@@ -145,14 +190,25 @@ When you finish, report:
 4. how it was verified,
 5. remaining risks, assumptions, or next steps.
 
-## Stakeholders specific bias for this repo
+## Repo-specific bias
 
 Bias toward:
 - clean repo structure,
 - strong ingestion and QC foundations,
-- analysis that is useful but cautious,
-- outputs that support future productization,
-- code that helps me learn sound AI/data application patterns.
+- scientifically cautious outputs,
+- app/core separation that can scale,
+- code that helps the maintainer learn sound Python and AI/data product patterns.
+
+## Shared working style
+
+Also follow these general preferences:
+- keep changes small, reversible, and easy to review,
+- do not fabricate APIs, files, schemas, metrics, or test results,
+- preserve user intent and existing repo conventions unless there is a strong reason to improve them,
+- favor repo-ready artifacts and practical execution over abstract advice,
+- be explicit about uncertainty and verification status.
+
+===
 # User-provided custom instructions
 
 # Jorge Codex v1
