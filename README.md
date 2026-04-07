@@ -54,6 +54,15 @@ Environment variables (see `.env.example`):
 - `.env.example`: safe configuration template.
 
 
+## Data contract docs
+- `docs/SCHEMA.md`: canonical schema, required fields, aliases.
+- `docs/DATA_DICTIONARY.md`: column-level definitions and examples.
+- `docs/validation_rules.md`: validation checks and failure semantics.
+
+## Deployment docs
+- `deploy/render.yaml`: baseline manifest for Render deployment.
+- `docs/deploy_runbook.md`: pre-deploy checks, runtime config, smoke checks, rollback.
+
 ## Architecture guardrails
 - `app/` contains Streamlit UI only.
 - `cpg_methylation_mvp.core` contains framework-agnostic business logic and **must not import Streamlit**.
