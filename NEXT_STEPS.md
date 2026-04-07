@@ -6,6 +6,11 @@ Pair it with `PROJECT_STATE.md` to keep work intentional, the repo clean, and th
 
 ---
 
+## Release planning artifact
+- See `docs/release_0_1_demo_plan_2026-04-07.md` for the scoped Level 1 hosted-demo release plan, gates, risk register, and program DoD.
+
+---
+
 ## Next Milestone: Demo-Stable Foundation
 **Definition of Done (DoD):**
 - Fresh clone → `pip install -e .` → `streamlit run app/main.py` works
