@@ -114,6 +114,7 @@ Scope completed for:
 
 ### Follow-up status
 - **Resolved:** `app.main` import-safety gap previously called out as a repo-hygiene P1 item.
+- **Resolved:** README now states the supported Python floor (`>=3.10`) and notes that checks have been exercised on Python 3.11 and 3.12.
 - **Still open (environmental):** editable-install verification remains partially blocked until package index/proxy access is restored.
 
 ## Recommended next actions (P1)
@@ -125,4 +126,3 @@ Scope completed for:
 2. Optionally add a tiny health script/Make target documenting two paths:
    - full install path (`pip install -e '.[dev]'`) for normal environments
    - local fallback test path (`PYTHONPATH=src pytest -q`) when packaging install is blocked.
-3. In README, add one sentence on supported Python versions (e.g., tested on 3.11 and 3.12) to reduce setup ambiguity.

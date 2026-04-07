@@ -21,6 +21,10 @@ cp .env.example .env
 streamlit run app/main.py
 ```
 
+## Python version
+- Requires Python `>=3.10` per `pyproject.toml`.
+- Repo checks and app smoke runs have been exercised on Python 3.11 and 3.12.
+
 ## Config
 Environment variables (see `.env.example`):
 - `APP_PAGE_TITLE`: browser tab title.
@@ -66,4 +70,13 @@ Environment variables (see `.env.example`):
 ```bash
 pip install -e ".[dev]"
 pytest -q
+```
+
+## Clean environment verification
+Once package index access is available, rerun the full editable-install path:
+
+```bash
+pip install -e ".[dev]"
+pytest -q
+streamlit run app/main.py --server.headless true --server.address 127.0.0.1 --server.port 8765
 ```
