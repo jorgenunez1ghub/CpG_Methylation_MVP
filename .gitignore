@@ -212,3 +212,6 @@ __marimo__/
 # Project data hygiene
 data/raw/
 data/output/
+uploads/
+outputs/
+.streamlit/secrets.toml
