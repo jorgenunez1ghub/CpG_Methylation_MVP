@@ -18,3 +18,9 @@ def test_public_core_api_imports() -> None:
     assert callable(normalize_upload)
     assert callable(validate_upload)
     assert callable(analyze_methylation)
+
+
+def test_streamlit_entrypoint_import_is_safe() -> None:
+    import app.main
+
+    assert callable(app.main.main)

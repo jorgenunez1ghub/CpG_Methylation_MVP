@@ -98,9 +98,30 @@ Scope completed for:
    - `.streamlit/secrets.toml`
 2. Updated stale `PROJECT_STATE.md` line about `NEXT_STEPS.md` presence.
 
+## Follow-up update — import safety closure
+
+### Commands run
+- `PYTHONPATH=src python3 -c "import app.main; import cpg_methylation_mvp.core as core; print('imports_ok')"`
+- `PYTHONPATH=src pytest -q tests/test_imports.py`
+- `PYTHONPATH=src pytest -q`
+- Python-managed headless startup probe for `streamlit run app/main.py --server.headless true --server.address 127.0.0.1 --server.port 8765`
+
+### Findings
+- `app.main` no longer executes UI flow at import time; importing it in bare Python now succeeds and exposes an explicit `main()` entrypoint.
+- A focused smoke test now guards that `import app.main` remains safe.
+- Full test suite passes with the added import-safety check: `13 passed`.
+- Headless Streamlit startup still succeeds after the entrypoint refactor.
+
+### Follow-up status
+- **Resolved:** `app.main` import-safety gap previously called out as a repo-hygiene P1 item.
+- **Still open (environmental):** editable-install verification remains partially blocked until package index/proxy access is restored.
+
 ## Recommended next actions (P1)
 
-1. Make `app/main.py` import-safe for non-Streamlit contexts by wrapping executable UI flow in `main()` and guarding entry (while preserving Streamlit behavior).
+1. Once package registry access is restored, rerun full clean-environment verification:
+   - `pip install -e '.[dev]'`
+   - `pytest -q`
+   - headless `streamlit run app/main.py` smoke check
 2. Optionally add a tiny health script/Make target documenting two paths:
    - full install path (`pip install -e '.[dev]'`) for normal environments
    - local fallback test path (`PYTHONPATH=src pytest -q`) when packaging install is blocked.
