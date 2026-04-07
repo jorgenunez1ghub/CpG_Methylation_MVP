@@ -23,17 +23,39 @@ ALIASES: dict[str, tuple[str, ...]] = {
 }
 
 
+def _find_preferred_source_column(df: pd.DataFrame, aliases: tuple[str, ...]) -> str | None:
+    """Return the preferred input column for an alias group.
+
+    Preference order:
+    1) First exact alias match in declared alias order.
+    2) First case-insensitive alias match in declared alias order.
+    """
+    columns = list(df.columns)
+
+    for alias in aliases:
+        if alias in columns:
+            return alias
+
+    lowered_to_columns: dict[str, list[str]] = {}
+    for column in columns:
+        lowered_to_columns.setdefault(column.lower().strip(), []).append(column)
+
+    for alias in aliases:
+        matches = lowered_to_columns.get(alias.lower().strip(), [])
+        if matches:
+            return matches[0]
+
+    return None
+
+
 def canonicalize_columns(df: pd.DataFrame) -> pd.DataFrame:
     """Map known aliases to canonical schema columns."""
-    lowered = {column.lower().strip(): column for column in df.columns}
     rename_map: dict[str, str] = {}
 
     for canonical, aliases in ALIASES.items():
-        for alias in aliases:
-            alias_lower = alias.lower()
-            if alias_lower in lowered:
-                rename_map[lowered[alias_lower]] = canonical
-                break
+        source_column = _find_preferred_source_column(df, aliases)
+        if source_column is not None:
+            rename_map[source_column] = canonical
 
     return df.rename(columns=rename_map)
 

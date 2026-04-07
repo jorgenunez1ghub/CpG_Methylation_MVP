@@ -11,3 +11,13 @@ def test_canonicalize_columns_aliases() -> None:
 
     assert list(selected.columns) == ["cpg_id", "beta", "chrom"]
     assert selected.iloc[0]["cpg_id"] == "cg1"
+
+
+def test_canonicalize_columns_preserves_alias_precedence_with_multiple_aliases() -> None:
+    df = pd.DataFrame([[0.2, 0.8]], columns=["beta", "Beta"])
+
+    normalized = canonicalize_columns(df)
+    selected = select_canonical_columns(normalized)
+
+    assert list(selected.columns) == ["beta"]
+    assert selected.iloc[0]["beta"] == 0.2
