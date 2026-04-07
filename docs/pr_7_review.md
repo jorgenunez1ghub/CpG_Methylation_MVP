@@ -23,3 +23,5 @@ Treat PR #7 as **stale and superseded** unless it contains unique, unmerged chan
 2. Preserve app/core separation (`app/` orchestration only, `core/` framework-agnostic).
 3. Keep/expand architecture tests for import boundaries.
 4. Re-run focused tests before merge.
+See also: `docs/pr_7_salvage_matrix.md` for a hunk-by-hunk salvage decision matrix based on currently available artifacts.
+
