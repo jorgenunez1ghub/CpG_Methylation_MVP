@@ -19,4 +19,9 @@ def test_core_modules_do_not_import_streamlit() -> None:
 def test_streamlit_app_uses_public_core_api() -> None:
     app_source = (REPO_ROOT / "app" / "main.py").read_text(encoding="utf-8")
 
+    assert "from cpg_methylation_mvp.core import" in app_source
     assert "from cpg_methylation_mvp.core.config import" not in app_source
+    assert "from cpg_methylation_mvp.core.ingest import" not in app_source
+    assert "from cpg_methylation_mvp.core.transform import" not in app_source
+    assert "from cpg_methylation_mvp.core.validate import" not in app_source
+    assert "from cpg_methylation_mvp.core.analyze import" not in app_source
