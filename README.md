@@ -64,5 +64,6 @@ Environment variables (see `.env.example`):
 
 ## Run tests
 ```bash
+pip install -e ".[dev]"
 pytest -q
 ```
