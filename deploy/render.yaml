@@ -1,0 +1,15 @@
+services:
+  - type: web
+    name: cpg-methylation-mvp
+    env: python
+    buildCommand: pip install -e .
+    startCommand: streamlit run app/main.py --server.address 0.0.0.0 --server.port $PORT
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.9
+      - key: APP_PAGE_TITLE
+        value: CpG Methylation MVP
+      - key: APP_TITLE
+        value: CpG Methylation MVP
+      - key: APP_LAYOUT
+        value: wide
