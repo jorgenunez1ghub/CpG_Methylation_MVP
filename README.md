@@ -68,6 +68,7 @@ Environment variables (see `.env.example`):
 - `docs/duplicate_policy_decision.md`: current duplicate `cpg_id` policy and aggregation guardrails.
 - `docs/duplicate_aggregation_adr.md`: revised opt-in aggregation contract, ready for approval review.
 - `docs/duplicate_aggregation_adr_review_memo.md`: review memo backing the duplicate aggregation ADR recommendations.
+- `docs/duplicate_aggregation_stakeholder_brief.md`: stakeholder-facing approval brief for the duplicate aggregation ADR.
 - `docs/production_readiness_plan.md`: phased production-hardening plan.
 
 ## Deployment docs

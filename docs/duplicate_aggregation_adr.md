@@ -6,6 +6,9 @@ Revised per review memo and ready for approval review. Not implemented.
 Companion review memo:
 - `docs/duplicate_aggregation_adr_review_memo.md`
 
+Stakeholder brief:
+- `docs/duplicate_aggregation_stakeholder_brief.md`
+
 ## Date
 2026-04-08
 
