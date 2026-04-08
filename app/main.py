@@ -3,16 +3,42 @@
 from __future__ import annotations
 
 from io import BytesIO
+import json
 import pandas as pd
 import streamlit as st
 
 from app.ui_config import APP_CAPTION, APP_DESCRIPTION, APP_LAYOUT, APP_TITLE, PAGE_TITLE
-from cpg_methylation_mvp.core import IngestError, ProcessedUpload, analyze_methylation, process_methylation_upload
+from cpg_methylation_mvp.core import (
+    DEFAULT_DUPLICATE_POLICY,
+    DuplicatePolicy,
+    IngestError,
+    ProcessedUpload,
+    ProcessingReport,
+    analyze_methylation,
+    process_methylation_upload,
+)
+
+_DUPLICATE_POLICY_LABELS: dict[str, DuplicatePolicy] = {
+    "Preserve rows and warn": "preserve_rows_and_warn",
+    "Reject duplicates": "reject_duplicates",
+}
+_DUPLICATE_POLICY_HELP = {
+    "preserve_rows_and_warn": "Keeps all rows for QC review and flags duplicates explicitly.",
+    "reject_duplicates": "Stops ingestion when any cpg_id appears more than once.",
+}
 
 
-def process_methylation_upload_cached(raw_bytes: bytes, filename: str) -> ProcessedUpload:
+def process_methylation_upload_cached(
+    raw_bytes: bytes,
+    filename: str,
+    duplicate_policy: DuplicatePolicy,
+) -> ProcessedUpload:
     """Cache ingestion by upload bytes + filename to avoid rerun work."""
-    return process_methylation_upload(uploaded_file=BytesIO(raw_bytes), source_name=filename)
+    return process_methylation_upload(
+        uploaded_file=BytesIO(raw_bytes),
+        source_name=filename,
+        duplicate_policy=duplicate_policy,
+    )
 
 
 def _dataframe_signature(df: pd.DataFrame) -> str:
@@ -68,6 +94,34 @@ def _drop_reason_table(report: ProcessedUpload) -> pd.DataFrame:
     return drop_reason_df
 
 
+def _normalized_csv_bytes(df: pd.DataFrame) -> bytes:
+    """Serialize normalized dataframe for download."""
+    return df.to_csv(index=False).encode("utf-8")
+
+
+def _processing_report_json(report: ProcessingReport) -> str:
+    """Serialize processing report as formatted JSON."""
+    return json.dumps(report.to_dict(), indent=2)
+
+
+def _processing_report_csv_bytes(report: ProcessingReport) -> bytes:
+    """Serialize processing report as a single-row CSV artifact."""
+    return pd.DataFrame([report.to_flat_dict()]).to_csv(index=False).encode("utf-8")
+
+
+def _duplicate_policy_label(policy: DuplicatePolicy) -> str:
+    """Return the human-readable label for a duplicate policy value."""
+    for label, value in _DUPLICATE_POLICY_LABELS.items():
+        if value == policy:
+            return label
+    return policy
+
+
+def _artifact_basename(source_file: str) -> str:
+    """Return a safe artifact basename derived from the upload filename."""
+    return source_file.rsplit(".", 1)[0]
+
+
 def main() -> None:
     """Render the Streamlit app."""
     cached_process_methylation_upload, cached_analyze_methylation = _streamlit_cached_functions()
@@ -76,6 +130,15 @@ def main() -> None:
     st.title(APP_TITLE)
     st.caption(APP_CAPTION)
     st.markdown(APP_DESCRIPTION)
+
+    selected_duplicate_label = st.selectbox(
+        "Duplicate CpG handling",
+        options=list(_DUPLICATE_POLICY_LABELS.keys()),
+        index=list(_DUPLICATE_POLICY_LABELS.values()).index(DEFAULT_DUPLICATE_POLICY),
+        help="Choose whether duplicated cpg_id values should be preserved for QC or rejected.",
+    )
+    duplicate_policy = _DUPLICATE_POLICY_LABELS[selected_duplicate_label]
+    st.caption(_DUPLICATE_POLICY_HELP[duplicate_policy])
 
     uploaded_file = st.file_uploader(
         "Upload methylation results file",
@@ -86,7 +149,11 @@ def main() -> None:
     if uploaded_file is not None:
         try:
             raw_bytes = uploaded_file.getvalue()
-            processed_upload = cached_process_methylation_upload(raw_bytes=raw_bytes, filename=uploaded_file.name)
+            processed_upload = cached_process_methylation_upload(
+                raw_bytes=raw_bytes,
+                filename=uploaded_file.name,
+                duplicate_policy=duplicate_policy,
+            )
             st.session_state["processed_upload"] = processed_upload
             st.success("Upload parsed and normalized successfully.")
         except IngestError as error:
@@ -111,15 +178,41 @@ def main() -> None:
 
     st.caption(
         f"Source file: {report.source_file} | Uploaded at (UTC): {report.uploaded_at} | "
-        "Duplicate policy: preserve rows and warn."
+        f"Parse strategy: {report.parse_strategy} | Duplicate policy: {_duplicate_policy_label(report.duplicate_policy)}."
     )
     st.dataframe(_drop_reason_table(processed_upload), width="stretch", hide_index=True)
+
+    if report.recovered_from_extension_mismatch:
+        st.info(
+            "The file extension did not match the detected delimiter. "
+            "The app recovered by parsing the content directly; rename the file if possible."
+        )
 
     if report.duplicate_cpg_id_groups > 0:
         st.warning(
             f"Found {report.duplicate_cpg_id_groups} duplicated cpg_id value(s). "
             "Rows were preserved to avoid silent aggregation."
         )
+
+    download_col1, download_col2, download_col3 = st.columns(3)
+    download_col1.download_button(
+        "Download normalized CSV",
+        data=_normalized_csv_bytes(normalized_df),
+        file_name=f"{_artifact_basename(report.source_file)}_normalized.csv",
+        mime="text/csv",
+    )
+    download_col2.download_button(
+        "Download report JSON",
+        data=_processing_report_json(report),
+        file_name=f"{_artifact_basename(report.source_file)}_processing_report.json",
+        mime="application/json",
+    )
+    download_col3.download_button(
+        "Download report CSV",
+        data=_processing_report_csv_bytes(report),
+        file_name=f"{_artifact_basename(report.source_file)}_processing_report.csv",
+        mime="text/csv",
+    )
 
     st.subheader("Normalized Data (Canonical Schema)")
     st.dataframe(normalized_df.head(100), width="stretch")

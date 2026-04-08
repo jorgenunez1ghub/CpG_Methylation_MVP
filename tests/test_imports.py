@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from typing import get_args
+
 
 def test_core_module_imports() -> None:
     import cpg_methylation_mvp.core.analyze  # noqa: F401
@@ -13,6 +15,8 @@ def test_core_module_imports() -> None:
 
 def test_public_core_api_imports() -> None:
     from cpg_methylation_mvp.core import (
+        DEFAULT_DUPLICATE_POLICY,
+        DuplicatePolicy,
         ProcessedUpload,
         ProcessingReport,
         analyze_methylation,
@@ -27,8 +31,10 @@ def test_public_core_api_imports() -> None:
     assert callable(process_methylation_upload)
     assert callable(validate_upload)
     assert callable(analyze_methylation)
+    assert DEFAULT_DUPLICATE_POLICY == "preserve_rows_and_warn"
     assert ProcessedUpload.__name__ == "ProcessedUpload"
     assert ProcessingReport.__name__ == "ProcessingReport"
+    assert "reject_duplicates" in get_args(DuplicatePolicy)
 
 
 def test_streamlit_entrypoint_import_is_safe() -> None:

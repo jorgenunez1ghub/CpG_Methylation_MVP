@@ -34,3 +34,14 @@ The ingestion pipeline currently appends the following metadata columns:
 - `uploaded_at`: UTC ISO-8601 timestamp
 
 These columns are for traceability in app workflows and are not part of the minimal canonical analytical pair (`cpg_id`, `beta`).
+
+## Processing report fields
+Successful ingestion also returns a structured processing report for app/API workflows.
+
+Key report fields include:
+- `parse_strategy`: whether parsing followed the extension delimiter, content sniffing, or recovered from a mislabeled extension
+- `recovered_from_extension_mismatch`: whether content parsing overrode the file extension
+- `input_row_count`, `retained_row_count`, `dropped_row_count`
+- `dropped_rows_by_reason`
+- `duplicate_cpg_id_groups`, `duplicate_cpg_id_extra_rows`
+- `duplicate_policy`

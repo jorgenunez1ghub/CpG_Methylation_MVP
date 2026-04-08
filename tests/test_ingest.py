@@ -77,6 +77,22 @@ class TestIngest(unittest.TestCase):
         self.assertEqual(processed.report.duplicate_cpg_id_extra_rows, 1)
         self.assertEqual(processed.report.duplicate_policy, "preserve_rows_and_warn")
 
+    def test_duplicate_cpg_ids_can_be_rejected_explicitly(self) -> None:
+        csv_payload = (
+            "cpg_id,beta\n"
+            "cg000001,0.2\n"
+            "cg000001,0.8\n"
+        ).encode("utf-8")
+
+        with self.assertRaises(IngestError) as context:
+            process_methylation_upload(
+                BytesIO(csv_payload),
+                source_name="duplicates.csv",
+                duplicate_policy="reject_duplicates",
+            )
+
+        self.assertIn("requires unique cpg_id values", str(context.exception))
+
     def test_whitespace_only_cpg_ids_are_dropped_and_reported(self) -> None:
         csv_payload = (
             "cpg_id,beta\n"
@@ -109,14 +125,15 @@ class TestIngest(unittest.TestCase):
         self.assertIn("Missing required column", str(context.exception))
         self.assertNotIn("empty", str(context.exception).lower())
 
-    def test_mislabeled_extension_reports_schema_error_not_empty_file(self) -> None:
+    def test_mislabeled_extension_is_recovered_from_content(self) -> None:
         tab_payload = "cpg_id\tbeta\ncg000001\t0.2\n".encode("utf-8")
 
-        with self.assertRaises(IngestError) as context:
-            load_methylation_file(BytesIO(tab_payload), source_name="mislabeled.csv")
+        processed = process_methylation_upload(BytesIO(tab_payload), source_name="mislabeled.csv")
 
-        self.assertIn("Missing required column", str(context.exception))
-        self.assertNotIn("empty", str(context.exception).lower())
+        self.assertEqual(len(processed.normalized_df), 1)
+        self.assertEqual(processed.normalized_df.iloc[0]["cpg_id"], "cg000001")
+        self.assertEqual(processed.report.parse_strategy, "recovered_from_mislabeled_extension")
+        self.assertTrue(processed.report.recovered_from_extension_mismatch)
 
     def test_processing_report_exposes_row_accounting_and_provenance(self) -> None:
         csv_payload = (
@@ -129,6 +146,7 @@ class TestIngest(unittest.TestCase):
         processed = process_methylation_upload(BytesIO(csv_payload), source_name="sample_upload.csv")
 
         self.assertEqual(processed.report.source_file, "sample_upload.csv")
+        self.assertEqual(processed.report.parse_strategy, "extension_delimiter")
         self.assertEqual(processed.report.input_row_count, 3)
         self.assertEqual(processed.report.retained_row_count, 2)
         self.assertEqual(processed.report.dropped_row_count, 1)
