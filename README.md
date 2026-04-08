@@ -66,6 +66,7 @@ Environment variables (see `.env.example`):
 - `docs/DATA_DICTIONARY.md`: column-level definitions and examples.
 - `docs/validation_rules.md`: validation checks and failure semantics.
 - `docs/duplicate_policy_decision.md`: current duplicate `cpg_id` policy and aggregation guardrails.
+- `docs/duplicate_aggregation_adr.md`: proposed opt-in aggregation contract for future duplicate handling.
 - `docs/production_readiness_plan.md`: phased production-hardening plan.
 
 ## Deployment docs

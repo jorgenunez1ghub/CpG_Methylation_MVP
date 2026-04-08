@@ -36,7 +36,7 @@ This document packages the next implementation pass by impact and separation of 
 ## Concrete Solution Paths
 
 ### 1. Duplicate aggregation
-- Start with an ADR and fixture package before any implementation branch is opened.
+- Start from `docs/duplicate_aggregation_adr.md` and review/approve it before any implementation branch is opened.
 - Keep the first implementation opt-in behind an explicit duplicate policy value rather than changing the current default.
 - Preserve the current duplicate-review artifact even if aggregation is added later so manual inspection remains possible.
 - Update tests, downloads, and processing-report disclosure together if aggregation changes retained-row semantics.
