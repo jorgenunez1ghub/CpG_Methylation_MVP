@@ -32,8 +32,9 @@ Validation behavior applies after column canonicalization and canonical column s
 - UTF-8 BOM:
   - if present, it is removed before parsing and recorded as a parse warning
 - Mixed delimiters:
-  - mixed comma/tab content is not auto-repaired beyond the conservative fallback above
-  - the processing report surfaces a parse warning so the user can inspect dropped rows
+  - mixed comma/tab content still records a parse warning for transparency
+  - if mixed delimiters break header-aligned row structure, ingestion fails with a clear error instead of partially retaining malformed rows
+  - mixed delimiters inside otherwise valid quoted text remain warning-only
 - Malformed quoting:
   - malformed quotes or broken delimiter structure raise a clear parsing error
 
@@ -45,6 +46,7 @@ Before validation, known source aliases are mapped to canonical names (see `docs
 - Duplicate `cpg_id` handling is explicit:
   - `preserve_rows_and_warn` keeps all rows, counts duplicates, and surfaces a warning
   - `reject_duplicates` fails ingestion when any duplicated `cpg_id` is present
+  - when duplicates are preserved, the UI also exposes a duplicate-review CSV for manual inspection
 
 ## Error messaging intent
 Error strings are designed to be:

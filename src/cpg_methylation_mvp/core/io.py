@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import csv
 from dataclasses import dataclass
 from io import BytesIO
 from pathlib import Path
@@ -37,10 +38,14 @@ def _strip_utf8_bom(raw_bytes: bytes) -> tuple[bytes, tuple[str, ...]]:
     return raw_bytes, ()
 
 
-def _detect_mixed_delimiters(raw_bytes: bytes) -> tuple[str, ...]:
-    """Return warnings for suspicious mixed-delimiter content."""
+def _sample_non_empty_lines(raw_bytes: bytes, max_lines: int = 5) -> list[str]:
+    """Return the first non-empty decoded lines for delimiter diagnostics."""
     sample_text = raw_bytes.decode("utf-8", errors="replace")
-    sample_lines = [line for line in sample_text.splitlines()[:5] if line.strip()]
+    return [line for line in sample_text.splitlines()[:max_lines] if line.strip()]
+
+
+def _detect_mixed_delimiters(sample_lines: list[str]) -> tuple[str, ...]:
+    """Return warnings for suspicious mixed-delimiter content."""
     if not sample_lines:
         return ()
 
@@ -51,11 +56,56 @@ def _detect_mixed_delimiters(raw_bytes: bytes) -> tuple[str, ...]:
     return ()
 
 
+def _header_delimiter(sample_lines: list[str]) -> str | None:
+    """Infer the delimiter used by the header row when unambiguous."""
+    if not sample_lines:
+        return None
+
+    header_line = sample_lines[0]
+    contains_comma = "," in header_line
+    contains_tab = "\t" in header_line
+    if contains_comma and not contains_tab:
+        return ","
+    if contains_tab and not contains_comma:
+        return "\t"
+    return None
+
+
+def _csv_field_count(line: str, delimiter: str) -> int | None:
+    """Return parsed field count for a single line, respecting CSV quoting."""
+    try:
+        return len(next(csv.reader([line], delimiter=delimiter)))
+    except (StopIteration, csv.Error):
+        return None
+
+
+def _mixed_delimiter_structure_warnings(sample_lines: list[str]) -> tuple[str, ...]:
+    """Return a warning when mixed delimiters break header-aligned row widths."""
+    if "mixed_delimiters_detected" not in _detect_mixed_delimiters(sample_lines):
+        return ()
+
+    header_delimiter = _header_delimiter(sample_lines)
+    if header_delimiter is None:
+        return ()
+
+    expected_field_count = _csv_field_count(sample_lines[0], delimiter=header_delimiter)
+    if expected_field_count is None or expected_field_count <= 1:
+        return ()
+
+    for line in sample_lines[1:]:
+        field_count = _csv_field_count(line, delimiter=header_delimiter)
+        if field_count is None or field_count != expected_field_count:
+            return ("mixed_delimiters_inconsistent_structure",)
+    return ()
+
+
 def _prepare_raw_bytes(raw_bytes: bytes) -> tuple[bytes, tuple[str, ...]]:
     """Normalize raw bytes before parsing and collect parse warnings."""
     cleaned_bytes, bom_warnings = _strip_utf8_bom(raw_bytes)
-    mixed_delimiter_warnings = _detect_mixed_delimiters(cleaned_bytes)
-    return cleaned_bytes, bom_warnings + mixed_delimiter_warnings
+    sample_lines = _sample_non_empty_lines(cleaned_bytes)
+    mixed_delimiter_warnings = _detect_mixed_delimiters(sample_lines)
+    structural_warnings = _mixed_delimiter_structure_warnings(sample_lines)
+    return cleaned_bytes, bom_warnings + mixed_delimiter_warnings + structural_warnings
 
 
 def _parse_table(raw_bytes: bytes, delimiter: str | None) -> pd.DataFrame:

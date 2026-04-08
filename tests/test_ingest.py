@@ -5,6 +5,7 @@ from cpg_methylation_mvp.core.ingest import (
     DEFAULT_MAX_UPLOAD_BYTES,
     PROCESSING_REPORT_VERSION,
     IngestError,
+    duplicate_review_table,
     load_methylation_file,
     process_methylation_upload,
 )
@@ -96,6 +97,24 @@ class TestIngest(unittest.TestCase):
         self.assertEqual(processed.report.duplicate_cpg_id_groups, 1)
         self.assertEqual(processed.report.duplicate_metadata_conflict_groups, 1)
 
+    def test_duplicate_review_table_surfaces_conflict_columns(self) -> None:
+        csv_payload = (
+            "cpg_id,beta,chrom,gene\n"
+            "cg000001,0.2,chr1,GENE1\n"
+            "cg000001,0.8,chr2,GENE1\n"
+        ).encode("utf-8")
+
+        processed = process_methylation_upload(BytesIO(csv_payload), source_name="duplicates_conflict.csv")
+        review_df = duplicate_review_table(processed.normalized_df)
+
+        self.assertEqual(len(review_df), 2)
+        self.assertTrue(review_df["duplicate_group_has_metadata_conflict"].all())
+        self.assertEqual(set(review_df["duplicate_group_conflict_columns"]), {"chrom"})
+        self.assertEqual(set(review_df["duplicate_group_row_count"]), {2})
+        self.assertEqual(set(review_df["duplicate_group_extra_rows"]), {1})
+        self.assertEqual(set(review_df["duplicate_group_beta_min"]), {0.2})
+        self.assertEqual(set(review_df["duplicate_group_beta_max"]), {0.8})
+
     def test_duplicate_cpg_ids_can_be_rejected_explicitly(self) -> None:
         csv_payload = (
             "cpg_id,beta\n"
@@ -163,17 +182,29 @@ class TestIngest(unittest.TestCase):
         self.assertEqual(processed.normalized_df.iloc[0]["cpg_id"], "cg000001")
         self.assertIn("removed_utf8_bom", processed.report.parse_warnings)
 
-    def test_mixed_delimiters_are_warned(self) -> None:
+    def test_mixed_delimiters_with_inconsistent_row_width_raise_clear_error(self) -> None:
         mixed_payload = (
             "cpg_id,beta\n"
             "cg000001,0.2\n"
             "cg000002\t0.3\n"
         ).encode("utf-8")
 
-        processed = process_methylation_upload(BytesIO(mixed_payload), source_name="mixed.csv")
+        with self.assertRaises(IngestError) as context:
+            process_methylation_upload(BytesIO(mixed_payload), source_name="mixed.csv")
+
+        self.assertIn("single delimiter", str(context.exception).lower())
+
+    def test_mixed_delimiter_warning_remains_nonfatal_for_quoted_text(self) -> None:
+        mixed_payload = (
+            'cpg_id,beta,note\n'
+            'cg000001,0.2,"contains\ttab"\n'
+        ).encode("utf-8")
+
+        processed = process_methylation_upload(BytesIO(mixed_payload), source_name="quoted_tabs.csv")
 
         self.assertEqual(processed.report.retained_row_count, 1)
         self.assertIn("mixed_delimiters_detected", processed.report.parse_warnings)
+        self.assertNotIn("mixed_delimiters_inconsistent_structure", processed.report.parse_warnings)
 
     def test_malformed_quotes_raise_clear_error(self) -> None:
         bad_payload = b'cpg_id,beta\n"cg000001,0.2\n'

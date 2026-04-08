@@ -12,6 +12,14 @@ pytest -q
 
 Expected: tests pass and no local import/runtime regressions.
 
+Recommended focused UI gate before pushing a deploy:
+
+```bash
+pytest -q tests/test_streamlit_smoke.py
+```
+
+This covers the rendered Streamlit app state locally. Hosted browser automation is still out of scope for this MVP and the deployed smoke path below remains a manual check.
+
 ## 2) Manifest-based deployment (Render)
 A baseline Render manifest is provided at `deploy/render.yaml`.
 

@@ -10,8 +10,10 @@ Lightweight Streamlit MVP for CpG methylation upload, validation, normalization,
 - Normalizes parsed input into a canonical table (`cpg_id`, `beta`, optional metadata columns).
 - Recovers conservatively from mislabeled `.csv`/`.tsv` delimiters when content parsing is clearly better than extension-based parsing.
 - Flags parse warnings such as UTF-8 BOM removal or mixed-delimiter content in the processing report.
+- Fails clearly when mixed delimiters create inconsistent row structure instead of partially ingesting malformed rows.
 - Shows a versioned processing report with source provenance, run ID, input checksum, parser strategy, input/retained/dropped row counts, and dropped-row reasons.
 - Lets the user choose duplicate CpG handling (`preserve rows and warn` or `reject duplicates`) before ingestion.
+- Provides a duplicate-review CSV when repeated `cpg_id` rows are retained, so follow-up review stays inspectable without silent aggregation.
 - Provides downloadable artifacts for normalized data and the processing report (JSON + CSV).
 - Shows quick QC outputs for retained analytical rows (unique CpGs, beta statistics, simple chart).
 - Uses Streamlit caching for file parsing and QC summary to reduce rerun work.
@@ -69,6 +71,7 @@ Environment variables (see `.env.example`):
 ## Deployment docs
 - `deploy/render.yaml`: baseline manifest for Render deployment.
 - `docs/deploy_runbook.md`: pre-deploy checks, runtime config, smoke checks, rollback.
+- `tests/test_streamlit_smoke.py`: local automated Streamlit smoke coverage for the rendered app state.
 
 ## Architecture guardrails
 - `app/` contains Streamlit UI only.
@@ -81,9 +84,10 @@ Environment variables (see `.env.example`):
 3. Choose the duplicate CpG policy appropriate for the workflow.
 4. Confirm success message after parse/normalize.
 5. Inspect the processing report for source filename, parser strategy, row accounting, parse warnings, and duplicate CpG warnings.
-6. Download the normalized CSV and processing report artifacts if needed.
-7. Inspect normalized table and retained-row QC metric cards.
-8. Verify beta chart renders expected distribution.
+6. If duplicate `cpg_id` rows are present, inspect or download the duplicate-review CSV before any manual deduplication.
+7. Download the normalized CSV and processing report artifacts if needed.
+8. Inspect normalized table and retained-row QC metric cards.
+9. Verify beta chart renders expected distribution.
 
 ## Run tests
 ```bash

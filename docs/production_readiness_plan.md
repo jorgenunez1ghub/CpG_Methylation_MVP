@@ -11,7 +11,7 @@ This document packages the next implementation pass by impact and separation of 
 ## Phase 2 — Parse Hardening
 - Maintain conservative delimiter recovery for mislabeled `.csv`/`.tsv` files.
 - Warn on UTF-8 BOM removal and mixed-delimiter content.
-- Fail clearly on malformed quotes or broken delimiter structure.
+- Fail clearly on malformed quotes or mixed-delimiter row-structure breaks.
 - Revisit chunked parsing only if file-size expectations exceed the current upload ceiling.
 
 ## Phase 3 — Artifact and Audit Readiness
@@ -21,6 +21,7 @@ This document packages the next implementation pass by impact and separation of 
 
 ## Phase 4 — Deployment Guardrails
 - Keep the Streamlit upload ceiling aligned with the core ingest limit.
+- Keep local Streamlit smoke automation in place as a pre-deploy gate.
 - Run deployed smoke checks for upload, report generation, duplicate warnings, and downloads.
 - Preserve explicit privacy language: session-scoped workflow, no durable storage configured, educational use only.
 
@@ -29,5 +30,5 @@ This document packages the next implementation pass by impact and separation of 
   - `core-parsing-hardening`
   - `duplicate-policy-expansion`
   - `deployment-and-observability`
-- Add a true browser-driven smoke test only if deployment automation justifies the dependency cost.
+- Add a true hosted browser-driven smoke test only if deployment automation justifies the dependency cost.
 - Add aggregation only after the duplicate-policy decision is expanded into a scientific/data-contract ADR.

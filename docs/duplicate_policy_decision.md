@@ -29,4 +29,5 @@ If aggregation is introduced later, it must define:
 ## Current implementation implications
 - Duplicate counts are tracked in the processing report.
 - Duplicate metadata conflicts are tracked separately to show when aggregation would be unsafe.
+- Preserved duplicates are exposed through a duplicate-review artifact so repeated rows can be inspected without inventing an aggregation rule.
 - UI copy must continue to describe duplicate handling as a user-selected policy, not an inferred scientific truth.

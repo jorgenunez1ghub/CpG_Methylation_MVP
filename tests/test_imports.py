@@ -22,6 +22,7 @@ def test_public_core_api_imports() -> None:
         ProcessedUpload,
         ProcessingReport,
         analyze_methylation,
+        duplicate_review_table,
         load_methylation_file,
         normalize_upload,
         process_methylation_upload,
@@ -33,6 +34,7 @@ def test_public_core_api_imports() -> None:
     assert callable(process_methylation_upload)
     assert callable(validate_upload)
     assert callable(analyze_methylation)
+    assert callable(duplicate_review_table)
     assert DEFAULT_DUPLICATE_POLICY == "preserve_rows_and_warn"
     assert DEFAULT_MAX_UPLOAD_BYTES == 25 * 1024 * 1024
     assert PROCESSING_REPORT_VERSION == "1.0"

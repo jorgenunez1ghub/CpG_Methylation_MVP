@@ -23,6 +23,7 @@ DuplicatePolicy = Literal["preserve_rows_and_warn", "reject_duplicates"]
 DEFAULT_DUPLICATE_POLICY: DuplicatePolicy = "preserve_rows_and_warn"
 DEFAULT_MAX_UPLOAD_BYTES = 25 * 1024 * 1024
 PROCESSING_REPORT_VERSION = "1.0"
+_DUPLICATE_REVIEW_EXCLUDED_COLUMNS = {"cpg_id", "beta", "source_file", "uploaded_at"}
 
 
 class IngestError(ValidationError):
@@ -103,24 +104,60 @@ def _duplicate_metadata_conflict_groups(df: pd.DataFrame) -> int:
     if not bool(duplicate_mask.any()):
         return 0
 
-    metadata_columns = [column for column in df.columns if column not in {"cpg_id", "beta"}]
-    if not metadata_columns:
-        return 0
-
     conflict_groups = 0
     duplicate_groups = df.loc[duplicate_mask].groupby("cpg_id", dropna=False)
     for _, group in duplicate_groups:
-        has_conflict = False
-        for column in metadata_columns:
-            non_null_values = group[column].dropna().astype(str).str.strip()
-            distinct_values = {value for value in non_null_values if value != ""}
-            if len(distinct_values) > 1:
-                has_conflict = True
-                break
-        if has_conflict:
+        if _duplicate_metadata_conflict_columns(group):
             conflict_groups += 1
 
     return conflict_groups
+
+
+def _duplicate_metadata_columns(df: pd.DataFrame) -> list[str]:
+    """Return metadata columns relevant for duplicate-group conflict review."""
+    return [column for column in df.columns if column not in _DUPLICATE_REVIEW_EXCLUDED_COLUMNS]
+
+
+def _duplicate_metadata_conflict_columns(group: pd.DataFrame) -> list[str]:
+    """Return metadata columns whose non-empty values disagree within a duplicate group."""
+    conflict_columns: list[str] = []
+    for column in _duplicate_metadata_columns(group):
+        non_null_values = group[column].dropna().astype(str).str.strip()
+        distinct_values = {value for value in non_null_values if value != ""}
+        if len(distinct_values) > 1:
+            conflict_columns.append(column)
+    return conflict_columns
+
+
+def duplicate_review_table(df: pd.DataFrame) -> pd.DataFrame:
+    """Return duplicate-row details for manual review without aggregating values."""
+    duplicate_mask = df["cpg_id"].duplicated(keep=False)
+    review_columns = list(df.columns) + [
+        "duplicate_group_row_count",
+        "duplicate_group_extra_rows",
+        "duplicate_group_has_metadata_conflict",
+        "duplicate_group_conflict_columns",
+        "duplicate_group_beta_min",
+        "duplicate_group_beta_max",
+    ]
+    if not bool(duplicate_mask.any()):
+        return pd.DataFrame(columns=review_columns)
+
+    review_df = df.loc[duplicate_mask].copy()
+    group_sizes = review_df.groupby("cpg_id", dropna=False)["cpg_id"].transform("size").astype(int)
+    review_df["duplicate_group_row_count"] = group_sizes
+    review_df["duplicate_group_extra_rows"] = group_sizes - 1
+    review_df["duplicate_group_beta_min"] = review_df.groupby("cpg_id", dropna=False)["beta"].transform("min")
+    review_df["duplicate_group_beta_max"] = review_df.groupby("cpg_id", dropna=False)["beta"].transform("max")
+
+    conflict_columns_by_cpg = {
+        cpg_id: "|".join(_duplicate_metadata_conflict_columns(group))
+        for cpg_id, group in review_df.groupby("cpg_id", dropna=False)
+    }
+    review_df["duplicate_group_conflict_columns"] = review_df["cpg_id"].map(conflict_columns_by_cpg).fillna("")
+    review_df["duplicate_group_has_metadata_conflict"] = review_df["duplicate_group_conflict_columns"] != ""
+
+    return review_df.reset_index(drop=True)
 
 
 def _enforce_duplicate_policy(
@@ -209,6 +246,11 @@ def process_methylation_upload(
             )
 
         parse_result = read_table_bytes(raw_bytes=raw_bytes, filename=name)
+        if "mixed_delimiters_inconsistent_structure" in parse_result.parse_warnings:
+            raise IngestError(
+                "Mixed delimiters produced inconsistent row structure. "
+                "Normalize the file to a single delimiter before upload."
+            )
         ensure_non_empty_dataframe(parse_result.dataframe)
 
         normalized = normalize_upload(parse_result.dataframe)

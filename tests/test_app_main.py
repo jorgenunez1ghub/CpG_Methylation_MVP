@@ -2,7 +2,12 @@ import json
 
 import pandas as pd
 
-from app.main import _normalized_csv_bytes, _processing_report_csv_bytes, _processing_report_json
+from app.main import (
+    _duplicate_review_csv_bytes,
+    _normalized_csv_bytes,
+    _processing_report_csv_bytes,
+    _processing_report_json,
+)
 from cpg_methylation_mvp.core import ProcessingReport
 
 
@@ -33,6 +38,15 @@ def test_processing_report_download_serializers() -> None:
     report_json = _processing_report_json(report)
     report_csv = _processing_report_csv_bytes(report).decode("utf-8")
     normalized_csv = _normalized_csv_bytes(pd.DataFrame({"cpg_id": ["cg1"], "beta": [0.2]})).decode("utf-8")
+    duplicate_review_csv = _duplicate_review_csv_bytes(
+        pd.DataFrame(
+            {
+                "cpg_id": ["cg1", "cg1"],
+                "beta": [0.2, 0.8],
+                "duplicate_group_row_count": [2, 2],
+            }
+        )
+    ).decode("utf-8")
 
     parsed_json = json.loads(report_json)
     assert parsed_json["source_file"] == "sample.csv"
@@ -40,3 +54,4 @@ def test_processing_report_download_serializers() -> None:
     assert "dropped_rows_missing_beta" in report_csv
     assert "parse_warnings" in report_csv
     assert "cpg_id,beta" in normalized_csv
+    assert "duplicate_group_row_count" in duplicate_review_csv

@@ -9,6 +9,7 @@ from .ingest import (
     PROCESSING_REPORT_VERSION,
     ProcessedUpload,
     ProcessingReport,
+    duplicate_review_table,
     load_methylation_file,
     process_methylation_upload,
 )
@@ -27,6 +28,7 @@ __all__ = [
     "ValidationError",
     "analyze_methylation",
     "canonicalize_columns",
+    "duplicate_review_table",
     "load_methylation_file",
     "normalize_upload",
     "process_methylation_upload",

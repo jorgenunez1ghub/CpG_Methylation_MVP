@@ -16,6 +16,7 @@ from cpg_methylation_mvp.core import (
     ProcessedUpload,
     ProcessingReport,
     analyze_methylation,
+    duplicate_review_table,
     process_methylation_upload,
 )
 
@@ -108,6 +109,11 @@ def _processing_report_json(report: ProcessingReport) -> str:
 def _processing_report_csv_bytes(report: ProcessingReport) -> bytes:
     """Serialize processing report as a single-row CSV artifact."""
     return pd.DataFrame([report.to_flat_dict()]).to_csv(index=False).encode("utf-8")
+
+
+def _duplicate_review_csv_bytes(df: pd.DataFrame) -> bytes:
+    """Serialize duplicate-row review details for download."""
+    return df.to_csv(index=False).encode("utf-8")
 
 
 def _duplicate_policy_label(policy: DuplicatePolicy) -> str:
@@ -213,6 +219,20 @@ def main() -> None:
             f"{report.duplicate_metadata_conflict_groups} duplicate cpg_id group(s) contain conflicting metadata. "
             "Aggregation remains unsafe without a defined scientific rule."
         )
+
+    duplicate_review_df = duplicate_review_table(normalized_df)
+    if not duplicate_review_df.empty:
+        st.subheader("Duplicate Review")
+        st.caption(
+            "Inspect repeated retained rows here before any manual deduplication or future aggregation decision."
+        )
+        st.download_button(
+            "Download duplicate review CSV",
+            data=_duplicate_review_csv_bytes(duplicate_review_df),
+            file_name=f"{_artifact_basename(report.source_file)}_duplicate_review.csv",
+            mime="text/csv",
+        )
+        st.dataframe(duplicate_review_df.head(100), width="stretch")
 
     download_col1, download_col2, download_col3 = st.columns(3)
     download_col1.download_button(
