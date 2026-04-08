@@ -19,11 +19,17 @@ from .validate import (
     validate_upload,
 )
 
-DuplicatePolicy = Literal["preserve_rows_and_warn", "reject_duplicates"]
+DuplicatePolicy = Literal[
+    "preserve_rows_and_warn",
+    "reject_duplicates",
+    "aggregate_mean_when_metadata_match",
+]
 DEFAULT_DUPLICATE_POLICY: DuplicatePolicy = "preserve_rows_and_warn"
 DEFAULT_MAX_UPLOAD_BYTES = 25 * 1024 * 1024
-PROCESSING_REPORT_VERSION = "1.0"
+PROCESSING_REPORT_VERSION = "2.0"
 _DUPLICATE_REVIEW_EXCLUDED_COLUMNS = {"cpg_id", "beta", "source_file", "uploaded_at"}
+_AGGREGATION_DUPLICATE_POLICY: DuplicatePolicy = "aggregate_mean_when_metadata_match"
+_AGGREGATION_METADATA_COLUMNS = ("chrom", "pos", "gene", "pval")
 
 
 class IngestError(ValidationError):
@@ -51,6 +57,12 @@ class ProcessingReport:
     duplicate_cpg_id_extra_rows: int
     duplicate_metadata_conflict_groups: int
     duplicate_policy: DuplicatePolicy = DEFAULT_DUPLICATE_POLICY
+    aggregation_applied: bool = False
+    pre_duplicate_policy_row_count: int = 0
+    aggregated_duplicate_cpg_id_groups: int = 0
+    aggregated_duplicate_input_rows: int = 0
+    aggregation_output_row_count: int = 0
+    aggregation_blocked_conflict_groups: int = 0
 
     def to_dict(self) -> dict[str, object]:
         """Return a JSON-friendly representation of the report."""
@@ -68,10 +80,27 @@ class ProcessingReport:
 
 @dataclass(frozen=True)
 class ProcessedUpload:
-    """Normalized upload dataframe plus its structured processing report."""
+    """Normalized upload dataframe plus structured report and optional aggregation audit."""
 
     normalized_df: pd.DataFrame
     report: ProcessingReport
+    aggregation_audit_df: pd.DataFrame | None = None
+
+
+@dataclass(frozen=True)
+class _DuplicatePolicyResult:
+    """Private result object for duplicate-policy application."""
+
+    output_df: pd.DataFrame
+    duplicate_groups: int
+    duplicate_extra_rows: int
+    duplicate_metadata_conflict_groups: int
+    aggregation_applied: bool = False
+    aggregated_duplicate_cpg_id_groups: int = 0
+    aggregated_duplicate_input_rows: int = 0
+    aggregation_output_row_count: int = 0
+    aggregation_blocked_conflict_groups: int = 0
+    aggregation_audit_df: pd.DataFrame | None = None
 
 
 def _input_sha256(raw_bytes: bytes) -> str:
@@ -115,18 +144,51 @@ def _duplicate_metadata_conflict_groups(df: pd.DataFrame) -> int:
 
 def _duplicate_metadata_columns(df: pd.DataFrame) -> list[str]:
     """Return metadata columns relevant for duplicate-group conflict review."""
-    return [column for column in df.columns if column not in _DUPLICATE_REVIEW_EXCLUDED_COLUMNS]
+    return [column for column in _AGGREGATION_METADATA_COLUMNS if column in df.columns]
 
 
 def _duplicate_metadata_conflict_columns(group: pd.DataFrame) -> list[str]:
     """Return metadata columns whose non-empty values disagree within a duplicate group."""
     conflict_columns: list[str] = []
     for column in _duplicate_metadata_columns(group):
-        non_null_values = group[column].dropna().astype(str).str.strip()
+        non_null_values = group.loc[_non_empty_value_mask(group[column]), column].astype(str).str.strip()
         distinct_values = {value for value in non_null_values if value != ""}
         if len(distinct_values) > 1:
             conflict_columns.append(column)
     return conflict_columns
+
+
+def _non_empty_value_mask(series: pd.Series) -> pd.Series:
+    """Return a mask for values that are not null/blank after string trim."""
+    return series.notna() & series.astype(str).str.strip().ne("")
+
+
+def _carried_metadata_value(group: pd.DataFrame, column: str) -> object:
+    """Return the single carried metadata value for a duplicate group, if any."""
+    if column not in group.columns:
+        return pd.NA
+
+    mask = _non_empty_value_mask(group[column])
+    if not bool(mask.any()):
+        return pd.NA
+    return group.loc[mask, column].iloc[0]
+
+
+def _empty_aggregation_audit_df() -> pd.DataFrame:
+    """Return an empty aggregation audit dataframe with stable columns."""
+    return pd.DataFrame(
+        columns=[
+            "cpg_id",
+            "source_row_count",
+            "beta_min",
+            "beta_max",
+            "beta_mean",
+            *_AGGREGATION_METADATA_COLUMNS,
+            "source_file",
+            "uploaded_at",
+            "aggregation_rule",
+        ]
+    )
 
 
 def duplicate_review_table(df: pd.DataFrame) -> pd.DataFrame:
@@ -160,11 +222,75 @@ def duplicate_review_table(df: pd.DataFrame) -> pd.DataFrame:
     return review_df.reset_index(drop=True)
 
 
-def _enforce_duplicate_policy(
+def _aggregate_duplicate_groups(
+    retained_df: pd.DataFrame,
+    source_file: str,
+    uploaded_at: str,
+) -> tuple[pd.DataFrame, pd.DataFrame, int, int]:
+    """Aggregate duplicate groups by mean beta when metadata values do not conflict."""
+    working_df = retained_df.copy().reset_index(drop=True)
+    duplicate_mask = working_df["cpg_id"].duplicated(keep=False)
+    if not bool(duplicate_mask.any()):
+        return retained_df.reset_index(drop=True), _empty_aggregation_audit_df(), 0, 0
+
+    working_df["_aggregation_input_order"] = range(len(working_df))
+    duplicate_groups = working_df.loc[duplicate_mask].groupby("cpg_id", dropna=False, sort=False)
+
+    aggregated_rows: list[dict[str, object]] = []
+    audit_rows: list[dict[str, object]] = []
+    for _, group in duplicate_groups:
+        carried_metadata = {
+            column: _carried_metadata_value(group, column)
+            for column in _AGGREGATION_METADATA_COLUMNS
+        }
+        aggregated_rows.append(
+            {
+                "cpg_id": group["cpg_id"].iloc[0],
+                "beta": float(group["beta"].mean()),
+                "_aggregation_input_order": int(group["_aggregation_input_order"].min()),
+                **carried_metadata,
+            }
+        )
+        audit_rows.append(
+            {
+                "cpg_id": group["cpg_id"].iloc[0],
+                "source_row_count": int(len(group)),
+                "beta_min": float(group["beta"].min()),
+                "beta_max": float(group["beta"].max()),
+                "beta_mean": float(group["beta"].mean()),
+                **carried_metadata,
+                "source_file": source_file,
+                "uploaded_at": uploaded_at,
+                "aggregation_rule": _AGGREGATION_DUPLICATE_POLICY,
+            }
+        )
+
+    non_duplicate_df = working_df.loc[~duplicate_mask].copy()
+    aggregated_df = pd.DataFrame(aggregated_rows)
+    output_df = (
+        pd.concat([non_duplicate_df, aggregated_df], ignore_index=True, sort=False)
+        .sort_values("_aggregation_input_order")
+        .drop(columns="_aggregation_input_order")
+    )
+    output_columns = [column for column in retained_df.columns if column in output_df.columns]
+    audit_df = pd.DataFrame(audit_rows, columns=_empty_aggregation_audit_df().columns)
+    aggregated_duplicate_input_rows = int(duplicate_mask.sum())
+    aggregated_duplicate_cpg_id_groups = int(len(aggregated_rows))
+    return (
+        output_df.loc[:, output_columns].reset_index(drop=True),
+        audit_df.reset_index(drop=True),
+        aggregated_duplicate_cpg_id_groups,
+        aggregated_duplicate_input_rows,
+    )
+
+
+def _apply_duplicate_policy_with_context(
     retained_df: pd.DataFrame,
     duplicate_policy: DuplicatePolicy,
-) -> tuple[int, int, int]:
-    """Apply the configured duplicate policy and return duplicate diagnostics."""
+    source_file: str,
+    uploaded_at: str,
+) -> _DuplicatePolicyResult:
+    """Apply duplicate policy with additional context needed for aggregation audits."""
     duplicate_groups, duplicate_extra_rows = _duplicate_counts(retained_df)
     duplicate_metadata_conflict_groups = _duplicate_metadata_conflict_groups(retained_df)
 
@@ -174,7 +300,37 @@ def _enforce_duplicate_policy(
             "Selected duplicate policy requires unique cpg_id values."
         )
 
-    return duplicate_groups, duplicate_extra_rows, duplicate_metadata_conflict_groups
+    if duplicate_policy == _AGGREGATION_DUPLICATE_POLICY:
+        if duplicate_metadata_conflict_groups > 0:
+            raise ValidationError(
+                f"Cannot aggregate {duplicate_metadata_conflict_groups} duplicated cpg_id group(s) because "
+                "optional metadata values conflict. Re-run with preserve_rows_and_warn to inspect them."
+            )
+        aggregated_df, audit_df, aggregated_groups, aggregated_input_rows = _aggregate_duplicate_groups(
+            retained_df=retained_df,
+            source_file=source_file,
+            uploaded_at=uploaded_at,
+        )
+        return _DuplicatePolicyResult(
+            output_df=aggregated_df,
+            duplicate_groups=duplicate_groups,
+            duplicate_extra_rows=duplicate_extra_rows,
+            duplicate_metadata_conflict_groups=duplicate_metadata_conflict_groups,
+            aggregation_applied=aggregated_groups > 0,
+            aggregated_duplicate_cpg_id_groups=aggregated_groups,
+            aggregated_duplicate_input_rows=aggregated_input_rows,
+            aggregation_output_row_count=int(len(aggregated_df)),
+            aggregation_blocked_conflict_groups=0,
+            aggregation_audit_df=None if audit_df.empty else audit_df,
+        )
+
+    return _DuplicatePolicyResult(
+        output_df=retained_df.reset_index(drop=True),
+        duplicate_groups=duplicate_groups,
+        duplicate_extra_rows=duplicate_extra_rows,
+        duplicate_metadata_conflict_groups=duplicate_metadata_conflict_groups,
+        aggregation_output_row_count=int(len(retained_df)),
+    )
 
 
 def _build_processing_report(
@@ -187,16 +343,19 @@ def _build_processing_report(
     recovered_from_extension_mismatch: bool,
     parse_warnings: tuple[str, ...],
     duplicate_policy: DuplicatePolicy,
-) -> tuple[pd.DataFrame, ProcessingReport]:
+) -> tuple[pd.DataFrame, ProcessingReport, pd.DataFrame | None]:
     """Drop incomplete analytical rows, apply duplicate policy, and build a report."""
     dropped_rows_by_reason, valid_rows = _missing_row_counts(validated_df)
-    retained_df = validated_df.loc[valid_rows].copy()
-    ensure_non_empty_dataframe(retained_df)
+    pre_policy_df = validated_df.loc[valid_rows].copy()
+    ensure_non_empty_dataframe(pre_policy_df)
 
-    duplicate_groups, duplicate_extra_rows, duplicate_metadata_conflict_groups = _enforce_duplicate_policy(
-        retained_df=retained_df,
+    duplicate_policy_result = _apply_duplicate_policy_with_context(
+        retained_df=pre_policy_df,
         duplicate_policy=duplicate_policy,
+        source_file=source_file,
+        uploaded_at=uploaded_at,
     )
+    output_df = duplicate_policy_result.output_df.copy()
 
     report = ProcessingReport(
         report_version=PROCESSING_REPORT_VERSION,
@@ -209,18 +368,24 @@ def _build_processing_report(
         recovered_from_extension_mismatch=recovered_from_extension_mismatch,
         parse_warnings=parse_warnings,
         input_row_count=int(len(validated_df)),
-        retained_row_count=int(len(retained_df)),
+        retained_row_count=int(len(output_df)),
         dropped_row_count=int((~valid_rows).sum()),
         dropped_rows_by_reason=dropped_rows_by_reason,
-        duplicate_cpg_id_groups=duplicate_groups,
-        duplicate_cpg_id_extra_rows=duplicate_extra_rows,
-        duplicate_metadata_conflict_groups=duplicate_metadata_conflict_groups,
+        duplicate_cpg_id_groups=duplicate_policy_result.duplicate_groups,
+        duplicate_cpg_id_extra_rows=duplicate_policy_result.duplicate_extra_rows,
+        duplicate_metadata_conflict_groups=duplicate_policy_result.duplicate_metadata_conflict_groups,
         duplicate_policy=duplicate_policy,
+        aggregation_applied=duplicate_policy_result.aggregation_applied,
+        pre_duplicate_policy_row_count=int(len(pre_policy_df)),
+        aggregated_duplicate_cpg_id_groups=duplicate_policy_result.aggregated_duplicate_cpg_id_groups,
+        aggregated_duplicate_input_rows=duplicate_policy_result.aggregated_duplicate_input_rows,
+        aggregation_output_row_count=duplicate_policy_result.aggregation_output_row_count,
+        aggregation_blocked_conflict_groups=duplicate_policy_result.aggregation_blocked_conflict_groups,
     )
 
-    retained_df["source_file"] = source_file
-    retained_df["uploaded_at"] = uploaded_at
-    return retained_df.reset_index(drop=True), report
+    output_df["source_file"] = source_file
+    output_df["uploaded_at"] = uploaded_at
+    return output_df.reset_index(drop=True), report, duplicate_policy_result.aggregation_audit_df
 
 
 def process_methylation_upload(
@@ -256,7 +421,7 @@ def process_methylation_upload(
         normalized = normalize_upload(parse_result.dataframe)
         validated = validate_upload(normalized)
         uploaded_at = datetime.now(timezone.utc).isoformat()
-        retained_df, report = _build_processing_report(
+        retained_df, report, aggregation_audit_df = _build_processing_report(
             validated_df=validated,
             source_file=name,
             uploaded_at=uploaded_at,
@@ -267,7 +432,11 @@ def process_methylation_upload(
             parse_warnings=parse_result.parse_warnings,
             duplicate_policy=duplicate_policy,
         )
-        return ProcessedUpload(normalized_df=retained_df, report=report)
+        return ProcessedUpload(
+            normalized_df=retained_df,
+            report=report,
+            aggregation_audit_df=aggregation_audit_df,
+        )
     except pd.errors.EmptyDataError as exc:
         raise IngestError(
             "The uploaded file appears empty. Please upload a CSV/TSV file with header and rows."

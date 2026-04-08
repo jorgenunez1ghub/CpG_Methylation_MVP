@@ -3,8 +3,8 @@
 This document packages the next implementation pass by impact and separation of concerns.
 
 ## Phase 1 — Ingestion Trust Contract
-- Keep duplicate handling explicit: preserve-and-warn or reject.
-- Treat aggregation as deferred until a scientific rule is approved.
+- Keep duplicate handling explicit: preserve-and-warn, reject, or approved opt-in aggregation.
+- Keep aggregation conservative: arithmetic mean only when optional metadata agree, with fail-fast conflicts and explicit audit/report disclosure.
 - Keep parse warnings first-class in the processing report.
 - Preserve run-level traceability with report version, run ID, and input checksum.
 
@@ -31,15 +31,15 @@ This document packages the next implementation pass by impact and separation of 
   - `duplicate-policy-expansion`
   - `deployment-and-observability`
 - Add a true hosted browser-driven smoke test only if deployment automation justifies the dependency cost.
-- Add aggregation only after the duplicate-policy decision is expanded into a scientific/data-contract ADR.
+- Revisit aggregation only through ADR revision if the policy needs to expand beyond the implemented v1 contract.
 
 ## Concrete Solution Paths
 
 ### 1. Duplicate aggregation
-- Start from the approved contract in `docs/duplicate_aggregation_adr.md` before any implementation branch is opened.
-- Keep the first implementation opt-in behind an explicit duplicate policy value rather than changing the current default.
-- Preserve the current duplicate-review artifact even if aggregation is added later so manual inspection remains possible.
-- Update tests, downloads, and processing-report disclosure together if aggregation changes retained-row semantics.
+- The first implementation is now in place from the approved contract in `docs/duplicate_aggregation_adr.md`.
+- Keep the implemented mode opt-in behind the explicit `aggregate_mean_when_metadata_match` policy value rather than changing the default.
+- Preserve the duplicate-review artifact for preserve-and-review workflows even though aggregation is now available.
+- Any future aggregation changes should update tests, downloads, and processing-report disclosure together because retained-row semantics are now versioned behavior.
 
 ### 2. Hosted smoke automation
 - Choose a single browser-automation stack deliberately instead of mixing tools in the repo.

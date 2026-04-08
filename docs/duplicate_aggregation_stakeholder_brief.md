@@ -6,7 +6,7 @@ Decision outcome:
 ## Purpose
 This brief translates `docs/duplicate_aggregation_adr.md` into a stakeholder decision view.
 
-It is written for PM, product, and demo-governance stakeholders who need to decide whether the ADR should be approved for future implementation planning.
+It is written for PM, product, and demo-governance stakeholders who needed a clear approval record and implementation boundary for duplicate aggregation.
 
 ## Executive summary
 **Recommendation: approve the ADR.**
@@ -17,7 +17,7 @@ Reason:
 - it preserves the repo’s trust posture by failing on unsafe metadata conflicts,
 - it requires audit and disclosure artifacts so aggregation does not become silent data rewriting.
 
-This approval would authorize a controlled implementation plan. It would **not** mean that aggregation is immediately live, scientifically validated beyond the defined workflow rule, or appropriate for clinical interpretation.
+This approval authorized a controlled implementation plan. It did **not** mean that aggregation was scientifically validated beyond the defined workflow rule or appropriate for clinical interpretation.
 
 ## Approved stakeholder decision scope
 Stakeholders approved four things:
@@ -137,8 +137,8 @@ Approving this ADR does **not** approve:
 - silent fallback behavior,
 - broader parsing or data-repair changes.
 
-## Implementation impact if approved
-Approval would justify one focused implementation PR with this shape:
+## Implementation impact after approval
+Approval justified one focused implementation PR with this shape:
 - extend duplicate policy enum/type,
 - implement aggregation in core,
 - add duplicate-fixture tests,
@@ -149,8 +149,8 @@ Approval would justify one focused implementation PR with this shape:
 This is a moderate, bounded change. It is not a repo-wide rewrite.
 
 ## Recorded stakeholder decision
-**The ADR was approved for controlled implementation planning.**
+**The ADR was approved and has now been implemented under that controlled scope.**
 
 Suggested approval statement:
 
-> We approve the duplicate aggregation ADR as an explicit, opt-in workflow rule for future implementation. Approval is limited to the documented mean-when-metadata-match contract, fail-fast conflict handling, and required audit/report disclosure. This approval does not change the current default duplicate behavior or imply clinical interpretation validity.
+> We approve the duplicate aggregation ADR as an explicit, opt-in workflow rule. Approval is limited to the documented mean-when-metadata-match contract, fail-fast conflict handling, and required audit/report disclosure. This approval does not change the current default duplicate behavior or imply clinical interpretation validity.

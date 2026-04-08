@@ -23,10 +23,14 @@ from cpg_methylation_mvp.core import (
 _DUPLICATE_POLICY_LABELS: dict[str, DuplicatePolicy] = {
     "Preserve rows and warn": "preserve_rows_and_warn",
     "Reject duplicates": "reject_duplicates",
+    "Aggregate duplicates (mean beta, matching metadata only)": "aggregate_mean_when_metadata_match",
 }
 _DUPLICATE_POLICY_HELP = {
     "preserve_rows_and_warn": "Keeps all rows for QC review and flags duplicates explicitly.",
     "reject_duplicates": "Stops ingestion when any cpg_id appears more than once.",
+    "aggregate_mean_when_metadata_match": (
+        "Collapses duplicate cpg_id rows by mean beta only when optional metadata values do not conflict."
+    ),
 }
 
 
@@ -113,6 +117,11 @@ def _processing_report_csv_bytes(report: ProcessingReport) -> bytes:
 
 def _duplicate_review_csv_bytes(df: pd.DataFrame) -> bytes:
     """Serialize duplicate-row review details for download."""
+    return df.to_csv(index=False).encode("utf-8")
+
+
+def _aggregation_audit_csv_bytes(df: pd.DataFrame) -> bytes:
+    """Serialize aggregation-audit details for download."""
     return df.to_csv(index=False).encode("utf-8")
 
 
@@ -209,16 +218,38 @@ def main() -> None:
     for warning_message in _parse_warning_messages(report):
         st.info(warning_message)
 
-    if report.duplicate_cpg_id_groups > 0:
+    if report.duplicate_policy == "preserve_rows_and_warn" and report.duplicate_cpg_id_groups > 0:
         st.warning(
             f"Found {report.duplicate_cpg_id_groups} duplicated cpg_id value(s). "
             "Rows were preserved to avoid silent aggregation."
         )
-    if report.duplicate_metadata_conflict_groups > 0:
+    if report.duplicate_policy == "aggregate_mean_when_metadata_match":
+        if report.aggregation_applied:
+            st.info(
+                f"Aggregated {report.aggregated_duplicate_cpg_id_groups} duplicated cpg_id group(s) from "
+                f"{report.aggregated_duplicate_input_rows} retained row(s)."
+            )
+        else:
+            st.info("Aggregation mode was selected, but no duplicate cpg_id groups required aggregation.")
+    if report.duplicate_metadata_conflict_groups > 0 and not report.aggregation_applied:
         st.warning(
             f"{report.duplicate_metadata_conflict_groups} duplicate cpg_id group(s) contain conflicting metadata. "
             "Aggregation remains unsafe without a defined scientific rule."
         )
+
+    aggregation_audit_df = processed_upload.aggregation_audit_df
+    if aggregation_audit_df is not None and not aggregation_audit_df.empty:
+        st.subheader("Aggregation Audit")
+        st.caption(
+            "This audit artifact records the duplicate groups collapsed under the explicit aggregation policy."
+        )
+        st.download_button(
+            "Download aggregation audit CSV",
+            data=_aggregation_audit_csv_bytes(aggregation_audit_df),
+            file_name=f"{_artifact_basename(report.source_file)}_aggregation_audit.csv",
+            mime="text/csv",
+        )
+        st.dataframe(aggregation_audit_df.head(100), width="stretch")
 
     duplicate_review_df = duplicate_review_table(normalized_df)
     if not duplicate_review_df.empty:
@@ -238,7 +269,11 @@ def main() -> None:
     download_col1.download_button(
         "Download normalized CSV",
         data=_normalized_csv_bytes(normalized_df),
-        file_name=f"{_artifact_basename(report.source_file)}_normalized.csv",
+        file_name=(
+            f"{_artifact_basename(report.source_file)}_aggregated_normalized.csv"
+            if report.aggregation_applied
+            else f"{_artifact_basename(report.source_file)}_normalized.csv"
+        ),
         mime="text/csv",
     )
     download_col2.download_button(

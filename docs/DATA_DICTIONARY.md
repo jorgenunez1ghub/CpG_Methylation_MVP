@@ -16,4 +16,6 @@ This dictionary explains each canonical column used in normalized CpG methylatio
 ## Notes
 - The MVP requires `cpg_id` and `beta` after normalization.
 - Optional columns are retained only if present in the upload.
+- Under the approved aggregation policy, duplicate `cpg_id` rows may be collapsed into one normalized row when optional metadata values do not conflict.
+- When aggregation is applied, a separate aggregation-audit artifact records `source_row_count`, `beta_min`, `beta_max`, `beta_mean`, carried metadata values, and `aggregation_rule`.
 - This is an educational analysis workflow and not clinical interpretation guidance.

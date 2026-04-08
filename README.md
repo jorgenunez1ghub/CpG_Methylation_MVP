@@ -12,8 +12,9 @@ Lightweight Streamlit MVP for CpG methylation upload, validation, normalization,
 - Flags parse warnings such as UTF-8 BOM removal or mixed-delimiter content in the processing report.
 - Fails clearly when mixed delimiters create inconsistent row structure instead of partially ingesting malformed rows.
 - Shows a versioned processing report with source provenance, run ID, input checksum, parser strategy, input/retained/dropped row counts, and dropped-row reasons.
-- Lets the user choose duplicate CpG handling (`preserve rows and warn` or `reject duplicates`) before ingestion.
+- Lets the user choose duplicate CpG handling (`preserve rows and warn`, `reject duplicates`, or explicit mean aggregation when metadata matches) before ingestion.
 - Provides a duplicate-review CSV when repeated `cpg_id` rows are retained, so follow-up review stays inspectable without silent aggregation.
+- Provides an aggregation-audit CSV when duplicate rows are collapsed under the approved aggregation policy.
 - Provides downloadable artifacts for normalized data and the processing report (JSON + CSV).
 - Shows quick QC outputs for retained analytical rows (unique CpGs, beta statistics, simple chart).
 - Uses Streamlit caching for file parsing and QC summary to reduce rerun work.
@@ -66,7 +67,7 @@ Environment variables (see `.env.example`):
 - `docs/DATA_DICTIONARY.md`: column-level definitions and examples.
 - `docs/validation_rules.md`: validation checks and failure semantics.
 - `docs/duplicate_policy_decision.md`: current duplicate `cpg_id` policy and aggregation guardrails.
-- `docs/duplicate_aggregation_adr.md`: approved opt-in aggregation contract for future duplicate handling.
+- `docs/duplicate_aggregation_adr.md`: approved and implemented opt-in aggregation contract for duplicate handling.
 - `docs/duplicate_aggregation_adr_review_memo.md`: review memo backing the duplicate aggregation ADR recommendations.
 - `docs/duplicate_aggregation_stakeholder_brief.md`: stakeholder-facing approval brief and recorded decision for the duplicate aggregation ADR.
 - `docs/production_readiness_plan.md`: phased production-hardening plan.
@@ -88,9 +89,10 @@ Environment variables (see `.env.example`):
 4. Confirm success message after parse/normalize.
 5. Inspect the processing report for source filename, parser strategy, row accounting, parse warnings, and duplicate CpG warnings.
 6. If duplicate `cpg_id` rows are present, inspect or download the duplicate-review CSV before any manual deduplication.
-7. Download the normalized CSV and processing report artifacts if needed.
-8. Inspect normalized table and retained-row QC metric cards.
-9. Verify beta chart renders expected distribution.
+7. If duplicate aggregation was applied, inspect or download the aggregation-audit CSV to review collapsed groups.
+8. Download the normalized CSV and processing report artifacts if needed.
+9. Inspect normalized table and retained-row QC metric cards.
+10. Verify beta chart renders expected distribution.
 
 ## Run tests
 ```bash

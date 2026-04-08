@@ -37,9 +37,10 @@ def test_public_core_api_imports() -> None:
     assert callable(duplicate_review_table)
     assert DEFAULT_DUPLICATE_POLICY == "preserve_rows_and_warn"
     assert DEFAULT_MAX_UPLOAD_BYTES == 25 * 1024 * 1024
-    assert PROCESSING_REPORT_VERSION == "1.0"
+    assert PROCESSING_REPORT_VERSION == "2.0"
     assert ProcessedUpload.__name__ == "ProcessedUpload"
     assert ProcessingReport.__name__ == "ProcessingReport"
+    assert "aggregate_mean_when_metadata_match" in get_args(DuplicatePolicy)
     assert "reject_duplicates" in get_args(DuplicatePolicy)
 
 
