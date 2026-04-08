@@ -1,7 +1,7 @@
 # Duplicate Aggregation ADR
 
 ## Status
-Revised per review memo and ready for approval review. Not implemented.
+Approved by stakeholders on 2026-04-08. Not implemented.
 
 Companion review memo:
 - `docs/duplicate_aggregation_adr_review_memo.md`
@@ -33,12 +33,12 @@ If the repo adds duplicate aggregation, it needs a rule for:
 - how the UI and report disclose that rows were aggregated,
 - what happens when duplicate groups are not safe to aggregate.
 
-## Proposed decision
+## Approved decision
 If duplicate aggregation is introduced, it should ship as a third explicit duplicate policy:
 
 - `aggregate_mean_when_metadata_match`
 
-This proposed policy would be opt-in only. The default remains `preserve_rows_and_warn`.
+This approved policy would be opt-in only. The default remains `preserve_rows_and_warn`.
 
 ## Proposed aggregation contract
 
@@ -207,11 +207,11 @@ If implemented, update together:
 - No automatic repair of conflicting metadata.
 - No silent fallback from failed aggregation into preserve mode.
 
-## Approval checklist
-Before implementation starts, confirm:
-- this ADR is approved,
-- the proposed duplicate-policy name is accepted,
-- the arithmetic-mean rule is accepted as a workflow default for this explicit mode,
-- conflict behavior is fail-fast rather than silent coercion,
-- the audit artifact shape is approved,
-- the report-version change plan is approved.
+## Approval record
+Stakeholder approval recorded on 2026-04-08 for:
+- the duplicate-policy name `aggregate_mean_when_metadata_match`,
+- arithmetic mean as the v1 workflow aggregation rule,
+- fail-fast behavior on conflicting metadata,
+- the documented audit artifact and processing-report disclosure contract.
+
+This approval does not authorize immediate release by itself. Implementation still requires a focused code change, tests, and report-version updates aligned to this ADR.

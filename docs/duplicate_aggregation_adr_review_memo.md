@@ -2,7 +2,7 @@
 
 Follow-up note:
 - The memo's recommended numeric-precision and disclosure-field edits have been applied to `docs/duplicate_aggregation_adr.md`.
-- The ADR is now in a ready-for-approval-review state; this memo remains the review record behind those edits.
+- Stakeholders have approved the ADR; this memo remains the review record behind those edits and recommendation.
 
 ## Scope reviewed
 This memo reviews `docs/duplicate_aggregation_adr.md` and makes recommendations on the four open decision points that should be resolved before any duplicate-aggregation code is implemented.
@@ -18,7 +18,7 @@ The current ADR is already aligned with the repo’s operating priorities:
 - maintainable app/core separation,
 - scientifically cautious behavior.
 
-My recommendation is to keep the overall direction and approve the revised ADR if stakeholders accept the explicit policy and disclosure contract.
+My recommendation was to keep the overall direction and approve the revised ADR if stakeholders accepted the explicit policy and disclosure contract. That approval has now been recorded.
 
 ## Decision summary
 
@@ -175,7 +175,7 @@ That means:
 - the report/audit disclosure contract is now tightened in the ADR.
 
 ## What I would do next after approval
-Once the ADR is approved, the first implementation PR should be narrowly scoped to:
+Now that the ADR is approved, the first implementation PR should be narrowly scoped to:
 - extend `DuplicatePolicy`,
 - add focused duplicate-fixture tests,
 - implement aggregation in core only,

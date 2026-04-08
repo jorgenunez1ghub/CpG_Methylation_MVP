@@ -33,9 +33,9 @@ If aggregation is introduced later, it must define:
 - UI copy must continue to describe duplicate handling as a user-selected policy, not an inferred scientific truth.
 
 ## Next safe step before aggregation
-The revised ADR is now ready for approval review in `docs/duplicate_aggregation_adr.md`.
+The approved ADR now lives in `docs/duplicate_aggregation_adr.md`.
 
-Any future aggregation change should begin by approving that ADR before code is opened.
+Any future aggregation change should begin by implementing against that approved ADR rather than inventing new aggregation behavior ad hoc.
 
 The ADR must answer:
 - which workflow actually requires one-row-per-`cpg_id` output,

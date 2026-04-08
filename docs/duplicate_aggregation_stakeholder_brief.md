@@ -1,5 +1,8 @@
 # Duplicate Aggregation ADR — Stakeholder Review Brief
 
+Decision outcome:
+- Approved by stakeholders on 2026-04-08.
+
 ## Purpose
 This brief translates `docs/duplicate_aggregation_adr.md` into a stakeholder decision view.
 
@@ -16,8 +19,8 @@ Reason:
 
 This approval would authorize a controlled implementation plan. It would **not** mean that aggregation is immediately live, scientifically validated beyond the defined workflow rule, or appropriate for clinical interpretation.
 
-## Decision requested from stakeholders
-Stakeholders are being asked to approve four things:
+## Approved stakeholder decision scope
+Stakeholders approved four things:
 
 1. A new explicit duplicate policy may be added later:
    - `aggregate_mean_when_metadata_match`
@@ -145,8 +148,8 @@ Approval would justify one focused implementation PR with this shape:
 
 This is a moderate, bounded change. It is not a repo-wide rewrite.
 
-## Suggested stakeholder decision
-**Approve the ADR for controlled implementation planning.**
+## Recorded stakeholder decision
+**The ADR was approved for controlled implementation planning.**
 
 Suggested approval statement:
 

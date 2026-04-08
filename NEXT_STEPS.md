@@ -182,7 +182,7 @@ Pick **one** (avoid parallel complexity):
 - `feature/cpg-schema-docs`
 - `feature/cpg-tests-ingestion`
 - `feature/cpg-qc-explanations`
-- `feature/cpg-duplicate-adr`
+- `feature/cpg-duplicate-aggregation-v1`
 - `feature/cpg-hosted-smoke-automation`
 - `feature/cpg-delimiter-quarantine`
 
@@ -198,8 +198,8 @@ Pick **one** (avoid parallel complexity):
 ---
 
 ## Current Top 3 Next Actions
-1. **Approve the revised duplicate aggregation ADR**
-   Deliverables: approval decision on `docs/duplicate_aggregation_adr.md` and explicit sign-off on the policy/report disclosure contract.
+1. **Open the first duplicate-aggregation implementation PR**
+   Deliverables: extend `DuplicatePolicy`, implement the approved core aggregation rule, add duplicate-fixture coverage, add audit artifact export, and bump `report_version`.
 2. **Add a deliberate hosted smoke automation track**
    Deliverables: one chosen browser stack, one deployed smoke workflow, and a non-blocking first CI pass over the hosted URL.
 3. **Design mixed-delimiter quarantine recovery**
