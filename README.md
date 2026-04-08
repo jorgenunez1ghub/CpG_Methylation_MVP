@@ -8,7 +8,8 @@ Lightweight Streamlit MVP for CpG methylation upload, validation, normalization,
 - Uploads CpG methylation files (`.csv`, `.tsv`, `.txt`) through a Streamlit UI.
 - Validates schema and value quality (required columns, numeric beta values, range checks).
 - Normalizes parsed input into a canonical table (`cpg_id`, `beta`, optional metadata columns).
-- Shows quick QC outputs (row counts, unique CpGs, beta statistics, simple chart).
+- Shows a processing report with source provenance, input/retained/dropped row counts, and dropped-row reasons.
+- Shows quick QC outputs for retained analytical rows (unique CpGs, beta statistics, simple chart).
 - Uses Streamlit caching for file parsing and QC summary to reduce rerun work.
 - Renders beta distribution as a compact histogram so large files remain responsive.
 
@@ -72,8 +73,9 @@ Environment variables (see `.env.example`):
 1. Run `streamlit run app/main.py`.
 2. Upload `data/sample/methylation_sample.csv`.
 3. Confirm success message after parse/normalize.
-4. Inspect normalized table and QC metric cards.
-5. Verify beta chart renders expected distribution.
+4. Inspect the processing report for source filename, row accounting, and duplicate CpG warnings.
+5. Inspect normalized table and retained-row QC metric cards.
+6. Verify beta chart renders expected distribution.
 
 ## Run tests
 ```bash

@@ -10,7 +10,7 @@ This dictionary explains each canonical column used in normalized CpG methylatio
 | `pos` | Genomic position/base-pair coordinate from input, when provided. | `27123456` | Optional positional context. |
 | `gene` | Gene symbol/annotation from input, when provided. | `TP53` | Optional interpretation context only. |
 | `pval` | Source p-value/significance field, when provided. | `0.0042` | Optional signal-strength context from source data. |
-| `source_file` | Ingestion provenance marker added by pipeline. | `uploaded_file` | Basic provenance in app session output. |
+| `source_file` | Original upload filename captured by the ingestion pipeline. | `sample_upload.csv` | Basic provenance in app session output and exports. |
 | `uploaded_at` | UTC ingestion timestamp in ISO format. | `2026-04-07T10:30:12.100000+00:00` | Provenance and reproducibility context. |
 
 ## Notes

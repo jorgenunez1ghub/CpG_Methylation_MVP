@@ -30,7 +30,7 @@ The normalizer maps known aliases to canonical names before validation.
 ## Ingestion-added metadata columns
 The ingestion pipeline currently appends the following metadata columns:
 
-- `source_file`: currently set to `uploaded_file`
+- `source_file`: original upload filename provided to ingestion
 - `uploaded_at`: UTC ISO-8601 timestamp
 
 These columns are for traceability in app workflows and are not part of the minimal canonical analytical pair (`cpg_id`, `beta`).

@@ -21,7 +21,7 @@ class ValidationConfig:
 
 def ensure_non_empty_dataframe(df: pd.DataFrame) -> None:
     """Raise when the dataframe has no rows."""
-    if df.empty:
+    if len(df.index) == 0:
         raise ValidationError(
             "The uploaded file is empty. Please provide a CSV/TSV with at least one data row."
         )
@@ -40,8 +40,12 @@ def ensure_required_columns(df: pd.DataFrame, required_columns: Iterable[str]) -
 
 def ensure_beta_numeric(df: pd.DataFrame, beta_column: str = "beta") -> None:
     """Raise when beta values cannot be parsed as numeric values."""
-    numeric_beta = pd.to_numeric(df[beta_column], errors="coerce")
-    invalid_mask = numeric_beta.isna() & df[beta_column].notna()
+    cleaned_beta = df[beta_column]
+    if pd.api.types.is_object_dtype(cleaned_beta) or pd.api.types.is_string_dtype(cleaned_beta):
+        cleaned_beta = cleaned_beta.astype("string").str.strip().replace("", pd.NA)
+
+    numeric_beta = pd.to_numeric(cleaned_beta, errors="coerce")
+    invalid_mask = numeric_beta.isna() & cleaned_beta.notna()
     invalid_count = int(invalid_mask.sum())
 
     if invalid_count > 0:
@@ -63,6 +67,27 @@ def ensure_beta_in_range(df: pd.DataFrame, beta_column: str = "beta") -> None:
         )
 
 
+def required_value_masks(
+    df: pd.DataFrame,
+    cpg_id_column: str = "cpg_id",
+    beta_column: str = "beta",
+) -> tuple[pd.Series, pd.Series, pd.Series]:
+    """Return masks for missing required fields and valid analytical rows."""
+    missing_cpg_id = df[cpg_id_column].isna() | df[cpg_id_column].eq("")
+    missing_beta = df[beta_column].isna()
+    valid_rows = ~(missing_cpg_id | missing_beta)
+    return missing_cpg_id, missing_beta, valid_rows
+
+
+def ensure_at_least_one_valid_required_row(df: pd.DataFrame) -> None:
+    """Raise when no rows remain after excluding missing required values."""
+    _, _, valid_rows = required_value_masks(df)
+    if not bool(valid_rows.any()):
+        raise ValidationError(
+            "No valid rows remain after excluding rows missing required cpg_id/beta values."
+        )
+
+
 
 def validate_upload(
     df: pd.DataFrame,
@@ -74,10 +99,13 @@ def validate_upload(
     ensure_required_columns(df, cfg.required_columns)
 
     validated = df.copy()
-    validated["cpg_id"] = validated["cpg_id"].astype(str).str.strip()
+    validated["cpg_id"] = validated["cpg_id"].astype("string").str.strip()
 
     ensure_beta_numeric(validated, beta_column="beta")
-    validated["beta"] = pd.to_numeric(validated["beta"], errors="coerce")
-    ensure_non_empty_dataframe(validated.dropna(subset=["cpg_id", "beta"]))
+    beta_series = validated["beta"]
+    if pd.api.types.is_object_dtype(beta_series) or pd.api.types.is_string_dtype(beta_series):
+        beta_series = beta_series.astype("string").str.strip().replace("", pd.NA)
+    validated["beta"] = pd.to_numeric(beta_series, errors="coerce")
+    ensure_at_least_one_valid_required_row(validated)
     ensure_beta_in_range(validated, beta_column="beta")
     return validated

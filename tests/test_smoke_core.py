@@ -6,6 +6,7 @@ from cpg_methylation_mvp.core import (
     analyze_methylation,
     load_methylation_file,
     normalize_upload,
+    process_methylation_upload,
     validate_upload,
 )
 
@@ -28,3 +29,13 @@ def test_validate_transform_analyze_smoke() -> None:
     assert list(normalized.columns) == ["cpg_id", "beta", "chrom"]
     assert summary["row_count"] == 2.0
     assert summary["unique_cpg"] == 2.0
+
+
+def test_process_methylation_upload_smoke() -> None:
+    payload = b"cpg_id,beta\ncg1,0.10\ncg2,\n"
+
+    processed = process_methylation_upload(BytesIO(payload), source_name="tiny.csv")
+
+    assert processed.report.input_row_count == 2
+    assert processed.report.retained_row_count == 1
+    assert processed.report.dropped_rows_by_reason["missing_beta"] == 1

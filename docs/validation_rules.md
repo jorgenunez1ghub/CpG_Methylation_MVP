@@ -16,7 +16,8 @@ Validation behavior applies after column canonicalization and canonical column s
    - Non-numeric values (excluding blanks that become missing) fail validation.
 
 4. **At least one valid (`cpg_id`, `beta`) row must remain**
-   - Rows with missing `cpg_id` or missing `beta` can be dropped, but the upload fails if all rows become invalid.
+   - Rows with missing `cpg_id` or missing `beta` are excluded from the retained analytical dataframe.
+   - The upload fails if all rows become invalid after that exclusion.
 
 5. **`beta` must be in `[0, 1]`**
    - Any value `< 0` or `> 1` fails validation.
@@ -31,11 +32,23 @@ Validation behavior applies after column canonicalization and canonical column s
 Before validation, known source aliases are mapped to canonical names (see `docs/SCHEMA.md`).
 
 ## Warning vs hard failure
-- Current MVP behavior uses hard failures for required-column issues, invalid numeric format, and out-of-range beta values.
-- Duplicate `cpg_id` values are currently allowed (not yet treated as warning/failure).
+- Current behavior uses hard failures for required-column issues, invalid numeric format, out-of-range beta values, and uploads where no valid analytical rows remain.
+- Duplicate `cpg_id` values are preserved, counted, and surfaced as warnings rather than silently aggregated.
 
 ## Error messaging intent
 Error strings are designed to be:
 - specific about what failed,
 - actionable for re-upload,
 - conservative (no speculative data repair).
+
+## Processing report
+Successful ingestion returns a retained normalized dataframe plus a structured processing report for UI/API use.
+
+The report includes:
+- source filename,
+- UTC upload timestamp,
+- input row count,
+- retained row count,
+- dropped row count,
+- dropped-row counts by reason,
+- duplicate CpG warning counts.

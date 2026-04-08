@@ -12,12 +12,23 @@ def test_core_module_imports() -> None:
 
 
 def test_public_core_api_imports() -> None:
-    from cpg_methylation_mvp.core import analyze_methylation, load_methylation_file, normalize_upload, validate_upload
+    from cpg_methylation_mvp.core import (
+        ProcessedUpload,
+        ProcessingReport,
+        analyze_methylation,
+        load_methylation_file,
+        normalize_upload,
+        process_methylation_upload,
+        validate_upload,
+    )
 
     assert callable(load_methylation_file)
     assert callable(normalize_upload)
+    assert callable(process_methylation_upload)
     assert callable(validate_upload)
     assert callable(analyze_methylation)
+    assert ProcessedUpload.__name__ == "ProcessedUpload"
+    assert ProcessingReport.__name__ == "ProcessingReport"
 
 
 def test_streamlit_entrypoint_import_is_safe() -> None:
