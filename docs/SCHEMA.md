@@ -39,9 +39,13 @@ These columns are for traceability in app workflows and are not part of the mini
 Successful ingestion also returns a structured processing report for app/API workflows.
 
 Key report fields include:
+- `report_version`, `run_id`
+- `input_sha256`
 - `parse_strategy`: whether parsing followed the extension delimiter, content sniffing, or recovered from a mislabeled extension
 - `recovered_from_extension_mismatch`: whether content parsing overrode the file extension
+- `parse_warnings`
 - `input_row_count`, `retained_row_count`, `dropped_row_count`
 - `dropped_rows_by_reason`
 - `duplicate_cpg_id_groups`, `duplicate_cpg_id_extra_rows`
+- `duplicate_metadata_conflict_groups`
 - `duplicate_policy`

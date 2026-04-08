@@ -7,6 +7,7 @@ Validation behavior applies after column canonicalization and canonical column s
 1. **File must exist and be non-empty**
    - Empty upload bytes fail ingestion.
    - Parsed dataframes with zero rows fail validation.
+   - Uploads larger than the configured limit fail before parsing.
 
 2. **Required canonical columns must be present**
    - Required: `cpg_id`, `beta`.
@@ -28,6 +29,13 @@ Validation behavior applies after column canonicalization and canonical column s
   - `.tsv` → tab
   - other extensions (for example `.txt`) → pandas sniffing (`sep=None`, `engine="python"`)
   - if extension-based parsing collapses to a single column but content sniffing yields a multi-column table, ingestion recovers via content parsing and records that recovery in the processing report
+- UTF-8 BOM:
+  - if present, it is removed before parsing and recorded as a parse warning
+- Mixed delimiters:
+  - mixed comma/tab content is not auto-repaired beyond the conservative fallback above
+  - the processing report surfaces a parse warning so the user can inspect dropped rows
+- Malformed quoting:
+  - malformed quotes or broken delimiter structure raise a clear parsing error
 
 ## Alias normalization
 Before validation, known source aliases are mapped to canonical names (see `docs/SCHEMA.md`).
@@ -48,12 +56,16 @@ Error strings are designed to be:
 Successful ingestion returns a retained normalized dataframe plus a structured processing report for UI/API use.
 
 The report includes:
+- report version and run ID,
 - source filename,
 - UTC upload timestamp,
+- input SHA-256 checksum,
 - parser strategy and whether delimiter recovery was needed,
+- parse warnings,
 - input row count,
 - retained row count,
 - dropped row count,
 - dropped-row counts by reason,
 - duplicate CpG warning counts,
+- duplicate metadata conflict counts,
 - applied duplicate policy.

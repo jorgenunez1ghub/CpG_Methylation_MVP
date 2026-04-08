@@ -3,8 +3,10 @@
 from .analyze import analyze_methylation, qc_summary
 from .ingest import (
     DEFAULT_DUPLICATE_POLICY,
+    DEFAULT_MAX_UPLOAD_BYTES,
     DuplicatePolicy,
     IngestError,
+    PROCESSING_REPORT_VERSION,
     ProcessedUpload,
     ProcessingReport,
     load_methylation_file,
@@ -15,8 +17,10 @@ from .validate import ValidationError, ValidationConfig, validate_upload
 
 __all__ = [
     "DEFAULT_DUPLICATE_POLICY",
+    "DEFAULT_MAX_UPLOAD_BYTES",
     "DuplicatePolicy",
     "IngestError",
+    "PROCESSING_REPORT_VERSION",
     "ProcessedUpload",
     "ProcessingReport",
     "ValidationConfig",

@@ -1,7 +1,13 @@
 from io import BytesIO
 import unittest
 
-from cpg_methylation_mvp.core.ingest import IngestError, load_methylation_file, process_methylation_upload
+from cpg_methylation_mvp.core.ingest import (
+    DEFAULT_MAX_UPLOAD_BYTES,
+    PROCESSING_REPORT_VERSION,
+    IngestError,
+    load_methylation_file,
+    process_methylation_upload,
+)
 
 
 class TestIngest(unittest.TestCase):
@@ -63,9 +69,9 @@ class TestIngest(unittest.TestCase):
 
     def test_duplicate_cpg_ids_are_preserved_and_reported(self) -> None:
         csv_payload = (
-            "cpg_id,beta\n"
-            "cg000001,0.2\n"
-            "cg000001,0.8\n"
+            "cpg_id,beta,chrom\n"
+            "cg000001,0.2,chr1\n"
+            "cg000001,0.8,chr1\n"
         ).encode("utf-8")
 
         processed = process_methylation_upload(BytesIO(csv_payload), source_name="duplicates.csv")
@@ -75,7 +81,20 @@ class TestIngest(unittest.TestCase):
         self.assertEqual(df["cpg_id"].nunique(), 1)
         self.assertEqual(processed.report.duplicate_cpg_id_groups, 1)
         self.assertEqual(processed.report.duplicate_cpg_id_extra_rows, 1)
+        self.assertEqual(processed.report.duplicate_metadata_conflict_groups, 0)
         self.assertEqual(processed.report.duplicate_policy, "preserve_rows_and_warn")
+
+    def test_duplicate_metadata_conflicts_are_reported(self) -> None:
+        csv_payload = (
+            "cpg_id,beta,chrom\n"
+            "cg000001,0.2,chr1\n"
+            "cg000001,0.8,chr2\n"
+        ).encode("utf-8")
+
+        processed = process_methylation_upload(BytesIO(csv_payload), source_name="duplicates_conflict.csv")
+
+        self.assertEqual(processed.report.duplicate_cpg_id_groups, 1)
+        self.assertEqual(processed.report.duplicate_metadata_conflict_groups, 1)
 
     def test_duplicate_cpg_ids_can_be_rejected_explicitly(self) -> None:
         csv_payload = (
@@ -134,6 +153,43 @@ class TestIngest(unittest.TestCase):
         self.assertEqual(processed.normalized_df.iloc[0]["cpg_id"], "cg000001")
         self.assertEqual(processed.report.parse_strategy, "recovered_from_mislabeled_extension")
         self.assertTrue(processed.report.recovered_from_extension_mismatch)
+        self.assertIn("recovered_from_mislabeled_extension", processed.report.parse_warnings)
+
+    def test_utf8_bom_is_removed_and_reported(self) -> None:
+        bom_payload = b"\xef\xbb\xbfcpg_id,beta\ncg000001,0.2\n"
+
+        processed = process_methylation_upload(BytesIO(bom_payload), source_name="bom.csv")
+
+        self.assertEqual(processed.normalized_df.iloc[0]["cpg_id"], "cg000001")
+        self.assertIn("removed_utf8_bom", processed.report.parse_warnings)
+
+    def test_mixed_delimiters_are_warned(self) -> None:
+        mixed_payload = (
+            "cpg_id,beta\n"
+            "cg000001,0.2\n"
+            "cg000002\t0.3\n"
+        ).encode("utf-8")
+
+        processed = process_methylation_upload(BytesIO(mixed_payload), source_name="mixed.csv")
+
+        self.assertEqual(processed.report.retained_row_count, 1)
+        self.assertIn("mixed_delimiters_detected", processed.report.parse_warnings)
+
+    def test_malformed_quotes_raise_clear_error(self) -> None:
+        bad_payload = b'cpg_id,beta\n"cg000001,0.2\n'
+
+        with self.assertRaises(IngestError) as context:
+            process_methylation_upload(BytesIO(bad_payload), source_name="bad_quotes.csv")
+
+        self.assertIn("malformed quotes", str(context.exception).lower())
+
+    def test_upload_limit_is_enforced(self) -> None:
+        oversized_payload = b"a" * (DEFAULT_MAX_UPLOAD_BYTES + 1)
+
+        with self.assertRaises(IngestError) as context:
+            process_methylation_upload(BytesIO(oversized_payload), source_name="oversized.csv")
+
+        self.assertIn("25 MB limit", str(context.exception))
 
     def test_processing_report_exposes_row_accounting_and_provenance(self) -> None:
         csv_payload = (
@@ -145,7 +201,10 @@ class TestIngest(unittest.TestCase):
 
         processed = process_methylation_upload(BytesIO(csv_payload), source_name="sample_upload.csv")
 
+        self.assertEqual(processed.report.report_version, PROCESSING_REPORT_VERSION)
+        self.assertTrue(processed.report.run_id)
         self.assertEqual(processed.report.source_file, "sample_upload.csv")
+        self.assertEqual(len(processed.report.input_sha256), 64)
         self.assertEqual(processed.report.parse_strategy, "extension_delimiter")
         self.assertEqual(processed.report.input_row_count, 3)
         self.assertEqual(processed.report.retained_row_count, 2)
@@ -153,6 +212,7 @@ class TestIngest(unittest.TestCase):
         self.assertEqual(processed.report.dropped_rows_by_reason["missing_beta"], 1)
         self.assertEqual(processed.report.duplicate_cpg_id_groups, 1)
         self.assertEqual(processed.report.duplicate_cpg_id_extra_rows, 1)
+        self.assertEqual(processed.report.parse_warnings, ())
         self.assertTrue((processed.normalized_df["source_file"] == "sample_upload.csv").all())
         self.assertTrue(processed.normalized_df["uploaded_at"].notna().all())
 

@@ -16,7 +16,9 @@ def test_core_module_imports() -> None:
 def test_public_core_api_imports() -> None:
     from cpg_methylation_mvp.core import (
         DEFAULT_DUPLICATE_POLICY,
+        DEFAULT_MAX_UPLOAD_BYTES,
         DuplicatePolicy,
+        PROCESSING_REPORT_VERSION,
         ProcessedUpload,
         ProcessingReport,
         analyze_methylation,
@@ -32,6 +34,8 @@ def test_public_core_api_imports() -> None:
     assert callable(validate_upload)
     assert callable(analyze_methylation)
     assert DEFAULT_DUPLICATE_POLICY == "preserve_rows_and_warn"
+    assert DEFAULT_MAX_UPLOAD_BYTES == 25 * 1024 * 1024
+    assert PROCESSING_REPORT_VERSION == "1.0"
     assert ProcessedUpload.__name__ == "ProcessedUpload"
     assert ProcessingReport.__name__ == "ProcessingReport"
     assert "reject_duplicates" in get_args(DuplicatePolicy)

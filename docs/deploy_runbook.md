@@ -19,6 +19,7 @@ Key settings:
 - build command: `pip install -e .`
 - start command: `streamlit run app/main.py --server.address 0.0.0.0 --server.port $PORT`
 - python version pin through environment variable
+- Streamlit upload ceiling is configured in `.streamlit/config.toml` (`25 MB`)
 
 ## 3) Runtime configuration
 Set app-facing environment variables as needed:
@@ -35,8 +36,13 @@ Optional placeholders (future integrations only):
 ## 4) Post-deploy smoke checks
 - App loads and renders title/caption.
 - Sample file upload (`data/sample/methylation_sample.csv`) succeeds.
+- Processing report shows a run ID, input checksum, parser strategy, and row accounting.
+- Duplicate handling selector is visible before upload.
+- Duplicate-preserve mode surfaces warnings for duplicate sample fixtures as expected.
 - QC metrics display non-empty values.
 - Histogram renders.
+- Normalized CSV download succeeds.
+- Processing report JSON and CSV downloads succeed.
 
 ## 5) Rollback
 If deployment fails or behavior regresses:
@@ -47,4 +53,5 @@ If deployment fails or behavior regresses:
 ## 6) Operational cautions
 - This repo is an educational demo and not medical advice.
 - Do not upload or store sensitive/private real health data.
+- No durable storage or retention workflow is configured for uploaded data or generated artifacts.
 - Keep secrets out of Git (`.env`, `.streamlit/secrets.toml`).

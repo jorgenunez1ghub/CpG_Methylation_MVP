@@ -10,6 +10,7 @@ import streamlit as st
 from app.ui_config import APP_CAPTION, APP_DESCRIPTION, APP_LAYOUT, APP_TITLE, PAGE_TITLE
 from cpg_methylation_mvp.core import (
     DEFAULT_DUPLICATE_POLICY,
+    DEFAULT_MAX_UPLOAD_BYTES,
     DuplicatePolicy,
     IngestError,
     ProcessedUpload,
@@ -122,6 +123,17 @@ def _artifact_basename(source_file: str) -> str:
     return source_file.rsplit(".", 1)[0]
 
 
+def _parse_warning_messages(report: ProcessingReport) -> list[str]:
+    """Return UI-facing parse warning text for the processing report."""
+    warning_messages = {
+        "removed_utf8_bom": "A UTF-8 BOM was removed before parsing.",
+        "mixed_delimiters_detected": "The upload appears to contain mixed delimiters; inspect dropped rows carefully.",
+        "sniffed_delimiter_for_unknown_extension": "Delimiter was inferred from file content because the extension was not specific.",
+        "recovered_from_mislabeled_extension": "The file extension did not match the detected delimiter; parsing recovered from content.",
+    }
+    return [warning_messages.get(warning, warning) for warning in report.parse_warnings]
+
+
 def main() -> None:
     """Render the Streamlit app."""
     cached_process_methylation_upload, cached_analyze_methylation = _streamlit_cached_functions()
@@ -139,6 +151,10 @@ def main() -> None:
     )
     duplicate_policy = _DUPLICATE_POLICY_LABELS[selected_duplicate_label]
     st.caption(_DUPLICATE_POLICY_HELP[duplicate_policy])
+    st.caption(
+        f"Upload limit: {DEFAULT_MAX_UPLOAD_BYTES // (1024 * 1024)} MB. "
+        "Uploads and generated artifacts are session-scoped; no durable storage is configured."
+    )
 
     uploaded_file = st.file_uploader(
         "Upload methylation results file",
@@ -178,20 +194,24 @@ def main() -> None:
 
     st.caption(
         f"Source file: {report.source_file} | Uploaded at (UTC): {report.uploaded_at} | "
-        f"Parse strategy: {report.parse_strategy} | Duplicate policy: {_duplicate_policy_label(report.duplicate_policy)}."
+        f"Parse strategy: {report.parse_strategy} | Duplicate policy: {_duplicate_policy_label(report.duplicate_policy)} | "
+        f"Run ID: {report.run_id} | Report version: {report.report_version} | "
+        f"Input checksum: {report.input_sha256[:12]}..."
     )
     st.dataframe(_drop_reason_table(processed_upload), width="stretch", hide_index=True)
 
-    if report.recovered_from_extension_mismatch:
-        st.info(
-            "The file extension did not match the detected delimiter. "
-            "The app recovered by parsing the content directly; rename the file if possible."
-        )
+    for warning_message in _parse_warning_messages(report):
+        st.info(warning_message)
 
     if report.duplicate_cpg_id_groups > 0:
         st.warning(
             f"Found {report.duplicate_cpg_id_groups} duplicated cpg_id value(s). "
             "Rows were preserved to avoid silent aggregation."
+        )
+    if report.duplicate_metadata_conflict_groups > 0:
+        st.warning(
+            f"{report.duplicate_metadata_conflict_groups} duplicate cpg_id group(s) contain conflicting metadata. "
+            "Aggregation remains unsafe without a defined scientific rule."
         )
 
     download_col1, download_col2, download_col3 = st.columns(3)

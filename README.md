@@ -9,7 +9,8 @@ Lightweight Streamlit MVP for CpG methylation upload, validation, normalization,
 - Validates schema and value quality (required columns, numeric beta values, range checks).
 - Normalizes parsed input into a canonical table (`cpg_id`, `beta`, optional metadata columns).
 - Recovers conservatively from mislabeled `.csv`/`.tsv` delimiters when content parsing is clearly better than extension-based parsing.
-- Shows a processing report with source provenance, parser strategy, input/retained/dropped row counts, and dropped-row reasons.
+- Flags parse warnings such as UTF-8 BOM removal or mixed-delimiter content in the processing report.
+- Shows a versioned processing report with source provenance, run ID, input checksum, parser strategy, input/retained/dropped row counts, and dropped-row reasons.
 - Lets the user choose duplicate CpG handling (`preserve rows and warn` or `reject duplicates`) before ingestion.
 - Provides downloadable artifacts for normalized data and the processing report (JSON + CSV).
 - Shows quick QC outputs for retained analytical rows (unique CpGs, beta statistics, simple chart).
@@ -62,6 +63,8 @@ Environment variables (see `.env.example`):
 - `docs/SCHEMA.md`: canonical schema, required fields, aliases.
 - `docs/DATA_DICTIONARY.md`: column-level definitions and examples.
 - `docs/validation_rules.md`: validation checks and failure semantics.
+- `docs/duplicate_policy_decision.md`: current duplicate `cpg_id` policy and aggregation guardrails.
+- `docs/production_readiness_plan.md`: phased production-hardening plan.
 
 ## Deployment docs
 - `deploy/render.yaml`: baseline manifest for Render deployment.
@@ -75,9 +78,9 @@ Environment variables (see `.env.example`):
 ## Demo flow
 1. Run `streamlit run app/main.py`.
 2. Upload `data/sample/methylation_sample.csv`.
-3. Confirm success message after parse/normalize.
-4. Choose the duplicate CpG policy appropriate for the workflow.
-5. Inspect the processing report for source filename, parser strategy, row accounting, and duplicate CpG warnings.
+3. Choose the duplicate CpG policy appropriate for the workflow.
+4. Confirm success message after parse/normalize.
+5. Inspect the processing report for source filename, parser strategy, row accounting, parse warnings, and duplicate CpG warnings.
 6. Download the normalized CSV and processing report artifacts if needed.
 7. Inspect normalized table and retained-row QC metric cards.
 8. Verify beta chart renders expected distribution.
