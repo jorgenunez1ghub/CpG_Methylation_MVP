@@ -3,6 +3,9 @@
 ## Status
 Proposed for review. Not implemented.
 
+Companion review memo:
+- `docs/duplicate_aggregation_adr_review_memo.md`
+
 ## Date
 2026-04-08
 

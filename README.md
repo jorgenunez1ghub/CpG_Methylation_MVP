@@ -67,6 +67,7 @@ Environment variables (see `.env.example`):
 - `docs/validation_rules.md`: validation checks and failure semantics.
 - `docs/duplicate_policy_decision.md`: current duplicate `cpg_id` policy and aggregation guardrails.
 - `docs/duplicate_aggregation_adr.md`: proposed opt-in aggregation contract for future duplicate handling.
+- `docs/duplicate_aggregation_adr_review_memo.md`: recommendation memo for approving or revising the duplicate aggregation ADR.
 - `docs/production_readiness_plan.md`: phased production-hardening plan.
 
 ## Deployment docs
