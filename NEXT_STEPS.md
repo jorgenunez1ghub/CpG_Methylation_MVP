@@ -182,6 +182,9 @@ Pick **one** (avoid parallel complexity):
 - `feature/cpg-schema-docs`
 - `feature/cpg-tests-ingestion`
 - `feature/cpg-qc-explanations`
+- `feature/cpg-duplicate-adr`
+- `feature/cpg-hosted-smoke-automation`
+- `feature/cpg-delimiter-quarantine`
 
 ---
 
@@ -195,8 +198,11 @@ Pick **one** (avoid parallel complexity):
 ---
 
 ## Current Top 3 Next Actions
-1. **Create schema docs:** `SCHEMA.md`, `DATA_DICTIONARY.md`, `validation_rules.md`
-2. **Harden `.gitignore` + untrack risky files** (`uploads/`, `outputs/`, `.env`, `data/raw/`)
-3. **Add ingestion tests** (happy path + 3 failure cases)
+1. **Draft the duplicate aggregation ADR package**
+   Deliverables: approved decision doc, duplicate-fixture matrix, and explicit disclosure requirements before any aggregation code.
+2. **Add a deliberate hosted smoke automation track**
+   Deliverables: one chosen browser stack, one deployed smoke workflow, and a non-blocking first CI pass over the hosted URL.
+3. **Design mixed-delimiter quarantine recovery**
+   Deliverables: explicit pre-normalization/quarantine workflow, user-visible quarantine counts, and tests that prove recovery is not silent.
 
-(Once these are done, the repo becomes stable enough to layer AI features without chaos.)
+(These are the highest-value follow-on steps now that ingestion hardening, duplicate review, and local Streamlit smoke coverage are in place.)

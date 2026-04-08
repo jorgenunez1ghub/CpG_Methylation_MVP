@@ -32,3 +32,23 @@ This document packages the next implementation pass by impact and separation of 
   - `deployment-and-observability`
 - Add a true hosted browser-driven smoke test only if deployment automation justifies the dependency cost.
 - Add aggregation only after the duplicate-policy decision is expanded into a scientific/data-contract ADR.
+
+## Concrete Solution Paths
+
+### 1. Duplicate aggregation
+- Start with an ADR and fixture package before any implementation branch is opened.
+- Keep the first implementation opt-in behind an explicit duplicate policy value rather than changing the current default.
+- Preserve the current duplicate-review artifact even if aggregation is added later so manual inspection remains possible.
+- Update tests, downloads, and processing-report disclosure together if aggregation changes retained-row semantics.
+
+### 2. Hosted smoke automation
+- Choose a single browser-automation stack deliberately instead of mixing tools in the repo.
+- Keep the current local Streamlit smoke test as the fast gate, then add deployed-URL smoke coverage as a separate workflow.
+- Limit the first deployed smoke scope to core trust checks: page load, upload success, duplicate warning visibility, and artifact download presence.
+- Start the deployed smoke workflow as non-blocking until selectors, hosting URL, and artifact behavior are stable enough to gate releases.
+
+### 3. Mixed-delimiter recovery
+- Do not broaden silent parser coercion.
+- If recovery work is prioritized, add an explicit pre-normalization workflow that separates clearly parseable rows from quarantined rows.
+- Surface quarantined-row counts and reasons in user-facing output so partial recovery remains inspectable.
+- Only add second-pass salvage for quarantined rows if the recovery rule is documented, tested, and reversible.
