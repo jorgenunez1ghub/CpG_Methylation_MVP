@@ -1,12 +1,16 @@
 # Duplicate Aggregation ADR Review Memo
 
+Follow-up note:
+- The memo's recommended numeric-precision and disclosure-field edits have been applied to `docs/duplicate_aggregation_adr.md`.
+- The ADR is now in a ready-for-approval-review state; this memo remains the review record behind those edits.
+
 ## Scope reviewed
 This memo reviews `docs/duplicate_aggregation_adr.md` and makes recommendations on the four open decision points that should be resolved before any duplicate-aggregation code is implemented.
 
 Review date: 2026-04-08
 
 ## Executive recommendation
-Approve the ADR direction **with minor edits**.
+Approve the ADR direction.
 
 The current ADR is already aligned with the repo’s operating priorities:
 - input reliability,
@@ -14,7 +18,7 @@ The current ADR is already aligned with the repo’s operating priorities:
 - maintainable app/core separation,
 - scientifically cautious behavior.
 
-My recommendation is to keep the overall direction and tighten only a few contract details before approval.
+My recommendation is to keep the overall direction and approve the revised ADR if stakeholders accept the explicit policy and disclosure contract.
 
 ## Decision summary
 
@@ -150,7 +154,7 @@ Use a clearly distinct artifact name when aggregation is introduced, for example
 This is better than overloading the current artifact names and forcing the report alone to carry all disclosure weight.
 
 ## Recommended ADR edits before approval
-Make these small changes to `docs/duplicate_aggregation_adr.md` before marking it approved:
+These edits were recommended by this memo and have now been applied to `docs/duplicate_aggregation_adr.md`:
 
 1. Keep the policy name unchanged.
 2. Add a clarification that aggregated beta values are not rounded in core outputs.
@@ -161,14 +165,14 @@ Make these small changes to `docs/duplicate_aggregation_adr.md` before marking i
 ## Approval recommendation
 Recommended disposition:
 
-**Approve with minor edits.**
+**Approve.**
 
 That means:
 - no change to the core direction,
 - no change to the proposed policy name,
 - no change to fail-fast conflict handling,
-- one clarification on numeric precision,
-- one tightening pass on report/audit disclosure fields.
+- the numeric-precision clarification is now in the ADR,
+- the report/audit disclosure contract is now tightened in the ADR.
 
 ## What I would do next after approval
 Once the ADR is approved, the first implementation PR should be narrowly scoped to:

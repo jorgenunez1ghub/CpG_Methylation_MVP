@@ -198,8 +198,8 @@ Pick **one** (avoid parallel complexity):
 ---
 
 ## Current Top 3 Next Actions
-1. **Review and approve the duplicate aggregation ADR**
-   Deliverables: approval decision on `docs/duplicate_aggregation_adr.md`, accepted policy name, and accepted report/audit disclosure shape.
+1. **Approve the revised duplicate aggregation ADR**
+   Deliverables: approval decision on `docs/duplicate_aggregation_adr.md` and explicit sign-off on the policy/report disclosure contract.
 2. **Add a deliberate hosted smoke automation track**
    Deliverables: one chosen browser stack, one deployed smoke workflow, and a non-blocking first CI pass over the hosted URL.
 3. **Design mixed-delimiter quarantine recovery**

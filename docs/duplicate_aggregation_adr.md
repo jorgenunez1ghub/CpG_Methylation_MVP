@@ -1,7 +1,7 @@
 # Duplicate Aggregation ADR
 
 ## Status
-Proposed for review. Not implemented.
+Revised per review memo and ready for approval review. Not implemented.
 
 Companion review memo:
 - `docs/duplicate_aggregation_adr_review_memo.md`
@@ -50,6 +50,7 @@ This proposed policy would be opt-in only. The default remains `preserve_rows_an
 
 ### 3. Beta aggregation math
 - Aggregate duplicate-group `beta` values with the arithmetic mean.
+- Store aggregated `beta` values at full numeric precision in core outputs; any rounding is display-only in UI or report presentation layers.
 
 Rationale:
 - it is deterministic and easy to inspect,
@@ -92,7 +93,9 @@ The audit artifact should include, at minimum:
 - `beta_max`
 - `beta_mean`
 - carried metadata values for `chrom`, `pos`, `gene`, `pval`
-- source filename and upload timestamp
+- `source_file`
+- `uploaded_at`
+- `aggregation_rule`
 
 The existing duplicate-review artifact should remain available for preserve-and-review workflows and should not be removed if aggregation is added later.
 
@@ -105,9 +108,13 @@ Minimum disclosure requirements:
 - downloadable artifact names should distinguish aggregated output from preserve/warn output,
 - the processing report should record that aggregation was requested and applied.
 
-Recommended additive processing-report fields:
+Minimum additive processing-report fields:
+- existing `duplicate_policy`
+- `aggregation_applied`
+- `pre_duplicate_policy_row_count`
 - `aggregated_duplicate_cpg_id_groups`
 - `aggregated_duplicate_input_rows`
+- `aggregation_output_row_count`
 - `aggregation_blocked_conflict_groups`
 
 Because these fields change report semantics, `report_version` should be bumped intentionally when they are introduced.
