@@ -1,7 +1,7 @@
 # Duplicate Aggregation ADR
 
 ## Status
-Approved by stakeholders on 2026-04-08. Not implemented.
+Approved by stakeholders on 2026-04-08. Implemented in the current codebase.
 
 Companion review memo:
 - `docs/duplicate_aggregation_adr_review_memo.md`
@@ -13,16 +13,18 @@ Stakeholder brief:
 2026-04-08
 
 ## Decision scope
-This ADR defines the safest acceptable shape for any future duplicate-aggregation feature in the CpG methylation MVP.
+This ADR defines the approved duplicate-aggregation contract for the CpG methylation MVP.
 
-It does not approve immediate implementation. It defines the contract that must be accepted before code adds a duplicate-aggregation mode.
+The current codebase implements that contract as an explicit, opt-in duplicate policy.
 
 ## Context
-- The current ingestion pipeline supports two explicit duplicate `cpg_id` policies:
+- The ingestion pipeline supports three explicit duplicate `cpg_id` policies:
   - `preserve_rows_and_warn`
   - `reject_duplicates`
-- The app now exposes a duplicate-review artifact so repeated rows and metadata conflicts remain inspectable.
-- Some downstream workflows may eventually require one retained row per `cpg_id`.
+  - `aggregate_mean_when_metadata_match`
+- The app exposes a duplicate-review artifact so repeated rows and metadata conflicts remain inspectable.
+- The app also exposes an aggregation-audit artifact when duplicate rows are collapsed under the approved rule.
+- Some downstream workflows require one retained row per `cpg_id`.
 - The repo is an educational MVP and should prefer inspectability, reversibility, and conservative failure behavior over silent data repair.
 
 ## Problem
@@ -34,11 +36,11 @@ If the repo adds duplicate aggregation, it needs a rule for:
 - what happens when duplicate groups are not safe to aggregate.
 
 ## Approved decision
-If duplicate aggregation is introduced, it should ship as a third explicit duplicate policy:
+Duplicate aggregation ships as a third explicit duplicate policy:
 
 - `aggregate_mean_when_metadata_match`
 
-This approved policy would be opt-in only. The default remains `preserve_rows_and_warn`.
+This policy is opt-in only. The default remains `preserve_rows_and_warn`.
 
 ## Proposed aggregation contract
 
@@ -103,7 +105,7 @@ The audit artifact should include, at minimum:
 The existing duplicate-review artifact should remain available for preserve-and-review workflows and should not be removed if aggregation is added later.
 
 ### 7. UI and processing-report disclosure
-Any future aggregation mode must be disclosed explicitly.
+The implemented aggregation mode must be disclosed explicitly.
 
 Minimum disclosure requirements:
 - the duplicate-policy selector label should state that aggregation is explicit and conditional on metadata agreement,
@@ -146,7 +148,7 @@ Cons:
 - may be too simplistic for some scientific contexts.
 
 Decision:
-- proposed for the first implementation if aggregation is approved.
+- approved and implemented for the first aggregation pass.
 
 ### Option C — Aggregate while coercing metadata conflicts
 Examples:
@@ -190,7 +192,7 @@ Decision:
 | Single non-duplicate row | one row only | pass through unchanged |
 
 ## Public API and documentation impact
-If implemented, update together:
+This implementation updates together:
 - `DuplicatePolicy` public type
 - app duplicate-policy selector copy
 - processing report schema/version notes
@@ -214,4 +216,4 @@ Stakeholder approval recorded on 2026-04-08 for:
 - fail-fast behavior on conflicting metadata,
 - the documented audit artifact and processing-report disclosure contract.
 
-This approval does not authorize immediate release by itself. Implementation still requires a focused code change, tests, and report-version updates aligned to this ADR.
+Stakeholder approval authorized this implementation contract. The current codebase now carries the focused core changes, tests, report-version update, and UI/report disclosure required by this ADR.

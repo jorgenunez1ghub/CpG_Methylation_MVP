@@ -131,6 +131,78 @@ class TestIngest(unittest.TestCase):
 
         self.assertIn("requires unique cpg_id values", str(context.exception))
 
+    def test_duplicate_cpg_ids_can_be_aggregated_when_metadata_match(self) -> None:
+        csv_payload = (
+            "cpg_id,beta,chrom,gene\n"
+            "cg000001,0.2,chr1,\n"
+            "cg000001,0.8,,GENE1\n"
+        ).encode("utf-8")
+
+        processed = process_methylation_upload(
+            BytesIO(csv_payload),
+            source_name="aggregate_duplicates.csv",
+            duplicate_policy="aggregate_mean_when_metadata_match",
+        )
+
+        self.assertEqual(len(processed.normalized_df), 1)
+        aggregated_row = processed.normalized_df.iloc[0]
+        self.assertEqual(aggregated_row["cpg_id"], "cg000001")
+        self.assertAlmostEqual(float(aggregated_row["beta"]), 0.5)
+        self.assertEqual(aggregated_row["chrom"], "chr1")
+        self.assertEqual(aggregated_row["gene"], "GENE1")
+        self.assertEqual(processed.report.duplicate_policy, "aggregate_mean_when_metadata_match")
+        self.assertTrue(processed.report.aggregation_applied)
+        self.assertEqual(processed.report.pre_duplicate_policy_row_count, 2)
+        self.assertEqual(processed.report.aggregated_duplicate_cpg_id_groups, 1)
+        self.assertEqual(processed.report.aggregated_duplicate_input_rows, 2)
+        self.assertEqual(processed.report.aggregation_output_row_count, 1)
+        self.assertEqual(processed.report.aggregation_blocked_conflict_groups, 0)
+        self.assertIsNotNone(processed.aggregation_audit_df)
+        assert processed.aggregation_audit_df is not None
+        self.assertEqual(len(processed.aggregation_audit_df), 1)
+        audit_row = processed.aggregation_audit_df.iloc[0]
+        self.assertEqual(audit_row["aggregation_rule"], "aggregate_mean_when_metadata_match")
+        self.assertEqual(int(audit_row["source_row_count"]), 2)
+        self.assertAlmostEqual(float(audit_row["beta_mean"]), 0.5)
+        self.assertEqual(audit_row["source_file"], "aggregate_duplicates.csv")
+
+    def test_aggregate_policy_fails_on_metadata_conflicts(self) -> None:
+        csv_payload = (
+            "cpg_id,beta,chrom\n"
+            "cg000001,0.2,chr1\n"
+            "cg000001,0.8,chr2\n"
+        ).encode("utf-8")
+
+        with self.assertRaises(IngestError) as context:
+            process_methylation_upload(
+                BytesIO(csv_payload),
+                source_name="aggregate_conflict.csv",
+                duplicate_policy="aggregate_mean_when_metadata_match",
+            )
+
+        self.assertIn("cannot aggregate 1 duplicated cpg_id group", str(context.exception).lower())
+        self.assertIn("preserve_rows_and_warn", str(context.exception))
+
+    def test_aggregate_policy_is_noop_when_no_duplicate_groups_exist(self) -> None:
+        csv_payload = (
+            "cpg_id,beta,chrom\n"
+            "cg000001,0.2,chr1\n"
+            "cg000002,0.8,chr2\n"
+        ).encode("utf-8")
+
+        processed = process_methylation_upload(
+            BytesIO(csv_payload),
+            source_name="unique_rows.csv",
+            duplicate_policy="aggregate_mean_when_metadata_match",
+        )
+
+        self.assertEqual(len(processed.normalized_df), 2)
+        self.assertFalse(processed.report.aggregation_applied)
+        self.assertEqual(processed.report.aggregated_duplicate_cpg_id_groups, 0)
+        self.assertEqual(processed.report.aggregated_duplicate_input_rows, 0)
+        self.assertEqual(processed.report.aggregation_output_row_count, 2)
+        self.assertIsNone(processed.aggregation_audit_df)
+
     def test_whitespace_only_cpg_ids_are_dropped_and_reported(self) -> None:
         csv_payload = (
             "cpg_id,beta\n"
@@ -243,6 +315,11 @@ class TestIngest(unittest.TestCase):
         self.assertEqual(processed.report.dropped_rows_by_reason["missing_beta"], 1)
         self.assertEqual(processed.report.duplicate_cpg_id_groups, 1)
         self.assertEqual(processed.report.duplicate_cpg_id_extra_rows, 1)
+        self.assertFalse(processed.report.aggregation_applied)
+        self.assertEqual(processed.report.pre_duplicate_policy_row_count, 2)
+        self.assertEqual(processed.report.aggregated_duplicate_cpg_id_groups, 0)
+        self.assertEqual(processed.report.aggregated_duplicate_input_rows, 0)
+        self.assertEqual(processed.report.aggregation_output_row_count, 2)
         self.assertEqual(processed.report.parse_warnings, ())
         self.assertTrue((processed.normalized_df["source_file"] == "sample_upload.csv").all())
         self.assertTrue(processed.normalized_df["uploaded_at"].notna().all())

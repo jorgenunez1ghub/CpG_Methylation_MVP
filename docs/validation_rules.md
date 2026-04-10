@@ -46,7 +46,10 @@ Before validation, known source aliases are mapped to canonical names (see `docs
 - Duplicate `cpg_id` handling is explicit:
   - `preserve_rows_and_warn` keeps all rows, counts duplicates, and surfaces a warning
   - `reject_duplicates` fails ingestion when any duplicated `cpg_id` is present
-  - when duplicates are preserved, the UI also exposes a duplicate-review CSV for manual inspection
+  - `aggregate_mean_when_metadata_match` collapses duplicate groups by arithmetic mean only when optional metadata values do not conflict
+  - aggregation fails clearly when duplicate groups contain conflicting metadata
+  - when duplicates are preserved, the UI exposes a duplicate-review CSV for manual inspection
+  - when aggregation is applied, the app exposes a separate aggregation-audit CSV for provenance review
 
 ## Error messaging intent
 Error strings are designed to be:
@@ -70,4 +73,10 @@ The report includes:
 - dropped-row counts by reason,
 - duplicate CpG warning counts,
 - duplicate metadata conflict counts,
-- applied duplicate policy.
+- applied duplicate policy,
+- whether aggregation was applied,
+- pre-policy retained row count,
+- aggregated duplicate group count,
+- aggregated duplicate input-row count,
+- aggregation output-row count,
+- blocked-conflict group count.

@@ -49,3 +49,20 @@ Key report fields include:
 - `duplicate_cpg_id_groups`, `duplicate_cpg_id_extra_rows`
 - `duplicate_metadata_conflict_groups`
 - `duplicate_policy`
+- `aggregation_applied`
+- `pre_duplicate_policy_row_count`
+- `aggregated_duplicate_cpg_id_groups`
+- `aggregated_duplicate_input_rows`
+- `aggregation_output_row_count`
+- `aggregation_blocked_conflict_groups`
+
+## Aggregation audit artifact
+When duplicate aggregation is applied, `ProcessedUpload` also carries an aggregation audit dataframe.
+
+Key audit fields include:
+- `cpg_id`
+- `source_row_count`
+- `beta_min`, `beta_max`, `beta_mean`
+- carried metadata values for `chrom`, `pos`, `gene`, `pval`
+- `source_file`, `uploaded_at`
+- `aggregation_rule`

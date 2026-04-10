@@ -198,11 +198,11 @@ Pick **one** (avoid parallel complexity):
 ---
 
 ## Current Top 3 Next Actions
-1. **Open the first duplicate-aggregation implementation PR**
-   Deliverables: extend `DuplicatePolicy`, implement the approved core aggregation rule, add duplicate-fixture coverage, add audit artifact export, and bump `report_version`.
+1. **Review and merge the duplicate-aggregation implementation branch**
+   Deliverables: verify the implementation stays aligned to `docs/duplicate_aggregation_adr.md`, review the new report/audit disclosure surfaces, and merge a narrow core-first PR without expanding scope.
 2. **Add a deliberate hosted smoke automation track**
    Deliverables: one chosen browser stack, one deployed smoke workflow, and a non-blocking first CI pass over the hosted URL.
 3. **Design mixed-delimiter quarantine recovery**
    Deliverables: explicit pre-normalization/quarantine workflow, user-visible quarantine counts, and tests that prove recovery is not silent.
 
-(These are the highest-value follow-on steps now that ingestion hardening, duplicate review, and local Streamlit smoke coverage are in place.)
+(These are the highest-value follow-on steps now that duplicate aggregation, duplicate audit disclosure, ingestion hardening, duplicate review, and local Streamlit smoke coverage are in place.)

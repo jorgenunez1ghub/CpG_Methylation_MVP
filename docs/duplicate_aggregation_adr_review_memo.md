@@ -5,7 +5,7 @@ Follow-up note:
 - Stakeholders have approved the ADR; this memo remains the review record behind those edits and recommendation.
 
 ## Scope reviewed
-This memo reviews `docs/duplicate_aggregation_adr.md` and makes recommendations on the four open decision points that should be resolved before any duplicate-aggregation code is implemented.
+This memo reviews `docs/duplicate_aggregation_adr.md` and records the recommendations that resolved the four decision points ahead of implementation.
 
 Review date: 2026-04-08
 
@@ -174,8 +174,8 @@ That means:
 - the numeric-precision clarification is now in the ADR,
 - the report/audit disclosure contract is now tightened in the ADR.
 
-## What I would do next after approval
-Now that the ADR is approved, the first implementation PR should be narrowly scoped to:
+## Implementation follow-through
+The approved implementation was intentionally scoped to:
 - extend `DuplicatePolicy`,
 - add focused duplicate-fixture tests,
 - implement aggregation in core only,
