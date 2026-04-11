@@ -8,6 +8,7 @@ from app.main import (
     _normalized_csv_bytes,
     _processing_report_csv_bytes,
     _processing_report_json,
+    _structured_interpretation_json_bytes,
 )
 from cpg_methylation_mvp.core import ProcessingReport
 
@@ -63,6 +64,12 @@ def test_processing_report_download_serializers() -> None:
             }
         )
     ).decode("utf-8")
+    interpretation_json = _structured_interpretation_json_bytes(
+        {
+            "workflow_id": "mvp_workflow_01",
+            "observed_data": {"coverage_pct": 40.0},
+        }
+    ).decode("utf-8")
 
     parsed_json = json.loads(report_json)
     assert parsed_json["source_file"] == "sample.csv"
@@ -73,3 +80,4 @@ def test_processing_report_download_serializers() -> None:
     assert "cpg_id,beta" in normalized_csv
     assert "duplicate_group_row_count" in duplicate_review_csv
     assert "aggregation_rule" in aggregation_audit_csv
+    assert '"workflow_id": "mvp_workflow_01"' in interpretation_json

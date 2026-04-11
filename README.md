@@ -1,10 +1,14 @@
 # CpG_Methylation_MVP
 
-Lightweight Streamlit MVP for CpG methylation upload, validation, normalization, and QC.
+Lightweight Streamlit MVP for one defensible CpG methylation workflow: upload, validation, normalization, panel coverage, and cautious structured interpretation.
 
 > **Disclaimer:** Educational demo only. Not medical advice.
 
+## MVP support statement (current)
+This MVP supports one workflow only: one delimited methylation upload is validated and normalized, checked against the curated demo CpG panel, and returned as a structured interpretation report with explicit uncertainty and non-clinical limitations.
+
 ## What it does
+- Supports one bounded end-to-end workflow (Workflow 01): **single file upload → canonical validation/QC → curated panel coverage → structured interpretation JSON + UI report**.
 - Uploads CpG methylation files (`.csv`, `.tsv`, `.txt`) through a Streamlit UI.
 - Validates schema and value quality (required columns, numeric beta values, range checks).
 - Normalizes parsed input into a canonical table (`cpg_id`, `beta`, optional metadata columns).
@@ -17,6 +21,7 @@ Lightweight Streamlit MVP for CpG methylation upload, validation, normalization,
 - Provides an aggregation-audit CSV when duplicate rows are collapsed under the approved aggregation policy.
 - Provides downloadable artifacts for normalized data and the processing report (JSON + CSV).
 - Evaluates a small curated demo panel (`data/panels/core_demo_panel.csv`) against normalized uploads and returns a structured coverage report (observed markers, missing markers, coverage status, and explicit limitations).
+- Produces a structured interpretation object that explicitly separates observed data, heuristic directional interpretation, limitations/uncertainty, and next analytical steps.
 - Shows quick QC outputs for retained analytical rows (unique CpGs, beta statistics, simple chart).
 - Uses Streamlit caching for file parsing and QC summary to reduce rerun work.
 - Renders beta distribution as a compact histogram so large files remain responsive.
@@ -65,6 +70,8 @@ Environment variables (see `.env.example`):
 
 
 ## Data contract docs
+- `docs/workflows/mvp_workflow_01.md`: exact supported MVP workflow, input contract, output schema, failure behavior.
+- `docs/workflows/workflow_01_release_checklist.md`: release/readiness checklist for Workflow 01.
 - `docs/SCHEMA.md`: canonical schema, required fields, aliases.
 - `docs/DATA_DICTIONARY.md`: column-level definitions and examples.
 - `docs/validation_rules.md`: validation checks and failure semantics.
@@ -95,6 +102,7 @@ Environment variables (see `.env.example`):
 8. Download the normalized CSV and processing report artifacts if needed.
 9. Inspect normalized table and retained-row QC metric cards.
 10. Verify beta chart renders expected distribution.
+11. Review **Structured Interpretation (Workflow 01)** and download interpretation JSON.
 
 ## Run tests
 ```bash

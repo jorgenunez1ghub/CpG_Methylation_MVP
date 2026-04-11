@@ -1,4 +1,4 @@
-"""Panel loading and evaluation helpers for curated CpG marker sets."""
+"""Panel loading, evaluation, and structured interpretation helpers."""
 
 from __future__ import annotations
 
@@ -19,6 +19,9 @@ PANEL_LIMITATIONS: tuple[str, ...] = (
     "No clinical interpretation is made.",
     "Missing CpGs reduce interpretability.",
 )
+WORKFLOW_ID = "mvp_workflow_01"
+_LOW_BETA_THRESHOLD = 0.30
+_HIGH_BETA_THRESHOLD = 0.70
 
 
 def _validate_columns(df: pd.DataFrame, required: tuple[str, ...], *, dataset_name: str) -> None:
@@ -111,3 +114,94 @@ def panel_report_table(result: dict) -> pd.DataFrame:
     ]
 
     return pd.DataFrame(observed_rows + missing_rows)
+
+
+def _beta_state(beta_value: float) -> str:
+    """Return a bounded state label for observed beta values."""
+    if beta_value >= _HIGH_BETA_THRESHOLD:
+        return "higher"
+    if beta_value <= _LOW_BETA_THRESHOLD:
+        return "lower"
+    return "intermediate"
+
+
+def _agreement_label(observed_state: str, expected_direction: str) -> str:
+    """Return agreement status between observed and expected signal direction."""
+    if observed_state == "intermediate":
+        return "uncertain"
+    if observed_state == expected_direction:
+        return "aligned"
+    return "not_aligned"
+
+
+def structured_interpretation(normalized_df: pd.DataFrame, panel_df: pd.DataFrame) -> dict[str, object]:
+    """Build a cautious, structured interpretation for one bounded workflow."""
+    _validate_columns(normalized_df, ("cpg_id", "beta"), dataset_name="normalized dataframe")
+    _validate_columns(panel_df, PANEL_REQUIRED_COLUMNS, dataset_name="panel dataframe")
+
+    panel_result = evaluate_panel(normalized_df=normalized_df, panel_df=panel_df)
+
+    panel_with_expected = panel_df.loc[:, ["cpg_id", "expected_direction"]].drop_duplicates("cpg_id")
+    observed_markers_df = pd.DataFrame(panel_result["observed_markers"])
+    if observed_markers_df.empty:
+        observed_markers_df = pd.DataFrame(columns=["cpg_id", "marker_label", "beta", "expected_direction"])
+    else:
+        observed_markers_df = observed_markers_df.merge(
+            panel_with_expected,
+            on="cpg_id",
+            how="left",
+        )
+
+    marker_interpretations: list[dict[str, object]] = []
+    for _, row in observed_markers_df.iterrows():
+        observed_beta = float(row["beta"])
+        observed_state = _beta_state(observed_beta)
+        expected_direction = str(row["expected_direction"]).strip()
+        marker_interpretations.append(
+            {
+                "cpg_id": row["cpg_id"],
+                "marker_label": row["marker_label"],
+                "observed_beta": observed_beta,
+                "observed_state": observed_state,
+                "expected_direction": expected_direction,
+                "agreement": _agreement_label(observed_state, expected_direction),
+            }
+        )
+
+    aligned_count = sum(item["agreement"] == "aligned" for item in marker_interpretations)
+    uncertain_count = sum(item["agreement"] == "uncertain" for item in marker_interpretations)
+
+    interpretation_summary = (
+        "Coverage too low for directional interpretation."
+        if panel_result["coverage_status"] == "none"
+        else "Directional signal is preliminary and should be treated as exploratory."
+    )
+
+    return {
+        "workflow_id": WORKFLOW_ID,
+        "panel_id": panel_result["panel_id"],
+        "status": "complete" if panel_result["coverage_status"] != "none" else "insufficient_coverage",
+        "observed_data": {
+            "panel_marker_count": panel_result["panel_marker_count"],
+            "markers_found": panel_result["markers_found"],
+            "markers_missing": panel_result["markers_missing"],
+            "coverage_pct": panel_result["coverage_pct"],
+            "coverage_status": panel_result["coverage_status"],
+        },
+        "interpretation": {
+            "summary": interpretation_summary,
+            "markers_aligned": aligned_count,
+            "markers_uncertain": uncertain_count,
+            "marker_interpretations": marker_interpretations,
+        },
+        "limitations": [
+            *panel_result["limitations"],
+            "Beta state thresholds are fixed at <=0.30 (lower), >=0.70 (higher), otherwise intermediate.",
+            "Marker direction agreement is heuristic and intended for workflow demonstration only.",
+        ],
+        "next_steps": [
+            "Inspect missing panel markers before drawing directional conclusions.",
+            "Review marker-level agreement alongside source metadata and duplicate handling choices.",
+            "Use independent datasets before expanding beyond this bounded panel workflow.",
+        ],
+    }

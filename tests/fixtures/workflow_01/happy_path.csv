@@ -1,0 +1,4 @@
+cpg_id,beta,chrom,gene
+cg00000029,0.82,chr1,GENE_A
+cg00000108,0.15,chr2,GENE_B
+cg99999999,0.45,chr3,GENE_X

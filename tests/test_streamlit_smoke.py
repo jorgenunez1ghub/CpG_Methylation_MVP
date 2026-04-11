@@ -21,7 +21,7 @@ def test_streamlit_default_state_smoke() -> None:
     assert app_test.selectbox[0].value == "Preserve rows and warn"
     assert "Aggregate duplicates (mean beta, matching metadata only)" in app_test.selectbox[0].options
     assert app_test.info[0].value == (
-        "Upload a CSV/TSV file to view normalized data, processing report, and QC summary."
+        "Upload a CSV/TSV file to view normalized data, processing report, QC summary, and structured interpretation."
     )
 
 
@@ -43,6 +43,7 @@ def test_streamlit_processed_duplicate_state_smoke() -> None:
         "Duplicate Review",
         "Normalized Data (Canonical Schema)",
         "QC Summary (Retained Rows)",
+        "Structured Interpretation (Workflow 01)",
     ]
     assert any("silent aggregation" in element.value.lower() for element in app_test.warning)
     assert any("unsafe without a defined scientific rule" in element.value.lower() for element in app_test.warning)
@@ -51,6 +52,7 @@ def test_streamlit_processed_duplicate_state_smoke() -> None:
         "Download normalized CSV",
         "Download report JSON",
         "Download report CSV",
+        "Download interpretation JSON",
     ]
 
 
@@ -76,6 +78,7 @@ def test_streamlit_processed_aggregated_state_smoke() -> None:
         "Aggregation Audit",
         "Normalized Data (Canonical Schema)",
         "QC Summary (Retained Rows)",
+        "Structured Interpretation (Workflow 01)",
     ]
     assert any("aggregated 1 duplicated cpg_id group" in element.value.lower() for element in app_test.info)
     assert _download_labels(app_test) == [
@@ -83,4 +86,5 @@ def test_streamlit_processed_aggregated_state_smoke() -> None:
         "Download normalized CSV",
         "Download report JSON",
         "Download report CSV",
+        "Download interpretation JSON",
     ]

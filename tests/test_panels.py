@@ -2,7 +2,12 @@ from pathlib import Path
 
 import pandas as pd
 
-from cpg_methylation_mvp.core.panels import evaluate_panel, load_panel, panel_report_table
+from cpg_methylation_mvp.core.panels import (
+    evaluate_panel,
+    load_panel,
+    panel_report_table,
+    structured_interpretation,
+)
 
 
 def test_load_panel_reads_demo_panel() -> None:
@@ -72,3 +77,41 @@ def test_panel_report_table_flattens_observed_and_missing_rows() -> None:
     }
     assert report_df.iloc[1]["cpg_id"] == "cg2"
     assert bool(report_df.iloc[1]["is_observed"]) is False
+
+
+def test_structured_interpretation_has_expected_sections() -> None:
+    normalized_df = pd.DataFrame(
+        {
+            "cpg_id": ["cg00000029", "cg00000108"],
+            "beta": [0.82, 0.25],
+        }
+    )
+    panel_df = load_panel(Path("data/panels/core_demo_panel.csv"))
+
+    result = structured_interpretation(normalized_df=normalized_df, panel_df=panel_df)
+
+    assert result["workflow_id"] == "mvp_workflow_01"
+    assert set(result.keys()) == {
+        "workflow_id",
+        "panel_id",
+        "status",
+        "observed_data",
+        "interpretation",
+        "limitations",
+        "next_steps",
+    }
+    assert result["status"] == "complete"
+    assert result["observed_data"]["markers_found"] == 2
+    assert result["interpretation"]["markers_aligned"] == 2
+    assert len(result["interpretation"]["marker_interpretations"]) == 2
+
+
+def test_structured_interpretation_marks_insufficient_coverage() -> None:
+    normalized_df = pd.DataFrame({"cpg_id": ["cg999"], "beta": [0.5]})
+    panel_df = load_panel(Path("data/panels/core_demo_panel.csv"))
+
+    result = structured_interpretation(normalized_df=normalized_df, panel_df=panel_df)
+
+    assert result["status"] == "insufficient_coverage"
+    assert result["observed_data"]["coverage_status"] == "none"
+    assert result["interpretation"]["marker_interpretations"] == []
