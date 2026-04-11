@@ -66,3 +66,14 @@ Key audit fields include:
 - carried metadata values for `chrom`, `pos`, `gene`, `pval`
 - `source_file`, `uploaded_at`
 - `aggregation_rule`
+
+## Demo panel contract
+The repository also includes a curated demo panel file used for deterministic coverage evaluation:
+
+- Path: `data/panels/core_demo_panel.csv`
+- Required columns: `panel_id`, `cpg_id`, `marker_label`, `expected_direction`, `notes`
+
+Panel evaluation is intentionally narrow and returns:
+- marker coverage counts and percentage,
+- observed vs missing marker lists,
+- explicit non-clinical limitations.

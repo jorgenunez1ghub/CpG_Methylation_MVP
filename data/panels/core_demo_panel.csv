@@ -1,0 +1,6 @@
+panel_id,cpg_id,marker_label,expected_direction,notes
+core_demo,cg00000029,Marker 1,higher,Demo marker for workflow validation only.
+core_demo,cg00000108,Marker 2,lower,Demo marker for workflow validation only.
+core_demo,cg00000109,Marker 3,higher,Demo marker for workflow validation only.
+core_demo,cg00000165,Marker 4,lower,Demo marker for workflow validation only.
+core_demo,cg00000236,Marker 5,higher,Demo marker for workflow validation only.
