@@ -16,6 +16,7 @@ Lightweight Streamlit MVP for CpG methylation upload, validation, normalization,
 - Provides a duplicate-review CSV when repeated `cpg_id` rows are retained, so follow-up review stays inspectable without silent aggregation.
 - Provides an aggregation-audit CSV when duplicate rows are collapsed under the approved aggregation policy.
 - Provides downloadable artifacts for normalized data and the processing report (JSON + CSV).
+- Evaluates a small curated demo panel (`data/panels/core_demo_panel.csv`) against normalized uploads and returns a structured coverage report (observed markers, missing markers, coverage status, and explicit limitations).
 - Shows quick QC outputs for retained analytical rows (unique CpGs, beta statistics, simple chart).
 - Uses Streamlit caching for file parsing and QC summary to reduce rerun work.
 - Renders beta distribution as a compact histogram so large files remain responsive.
@@ -57,6 +58,7 @@ Environment variables (see `.env.example`):
   - `transform.py`: canonical schema mapping and column selection.
   - `validate.py`: schema and value checks.
   - `analyze.py`: QC metric helpers.
+  - `panels.py`: curated panel loading, coverage evaluation, and marker-level report formatting.
 - `tests/`: fast smoke tests for core functions.
 - `docs/`: project notes and decision artifacts.
 - `.env.example`: safe configuration template.
