@@ -13,7 +13,7 @@ from .ingest import (
     load_methylation_file,
     process_methylation_upload,
 )
-from .panels import evaluate_panel, load_panel, panel_report_table
+from .panels import evaluate_panel, load_panel, panel_report_table, structured_interpretation
 from .transform import canonicalize_columns, normalize_upload, select_canonical_columns
 from .validate import ValidationError, ValidationConfig, validate_upload
 
@@ -35,6 +35,7 @@ __all__ = [
     "load_panel",
     "normalize_upload",
     "panel_report_table",
+    "structured_interpretation",
     "process_methylation_upload",
     "qc_summary",
     "select_canonical_columns",

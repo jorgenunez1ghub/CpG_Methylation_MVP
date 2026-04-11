@@ -4,6 +4,8 @@ from __future__ import annotations
 
 from io import BytesIO
 import json
+import logging
+from pathlib import Path
 import pandas as pd
 import streamlit as st
 
@@ -17,7 +19,9 @@ from cpg_methylation_mvp.core import (
     ProcessingReport,
     analyze_methylation,
     duplicate_review_table,
+    load_panel,
     process_methylation_upload,
+    structured_interpretation,
 )
 
 _DUPLICATE_POLICY_LABELS: dict[str, DuplicatePolicy] = {
@@ -32,6 +36,8 @@ _DUPLICATE_POLICY_HELP = {
         "Collapses duplicate cpg_id rows by mean beta only when optional metadata values do not conflict."
     ),
 }
+_WORKFLOW_PANEL_PATH = Path("data/panels/core_demo_panel.csv")
+_LOGGER = logging.getLogger(__name__)
 
 
 def process_methylation_upload_cached(
@@ -115,6 +121,11 @@ def _processing_report_csv_bytes(report: ProcessingReport) -> bytes:
     return pd.DataFrame([report.to_flat_dict()]).to_csv(index=False).encode("utf-8")
 
 
+def _structured_interpretation_json_bytes(interpretation: dict[str, object]) -> bytes:
+    """Serialize structured interpretation output as formatted JSON."""
+    return json.dumps(interpretation, indent=2).encode("utf-8")
+
+
 def _duplicate_review_csv_bytes(df: pd.DataFrame) -> bytes:
     """Serialize duplicate-row review details for download."""
     return df.to_csv(index=False).encode("utf-8")
@@ -186,19 +197,23 @@ def main() -> None:
                 duplicate_policy=duplicate_policy,
             )
             st.session_state["processed_upload"] = processed_upload
+            _LOGGER.info("workflow_step=ingest_parse_normalize status=success source_file=%s", uploaded_file.name)
             st.success("Upload parsed and normalized successfully.")
         except IngestError as error:
             st.session_state.pop("processed_upload", None)
+            _LOGGER.warning("workflow_step=ingest_parse_normalize status=error detail=%s", str(error))
             st.error(str(error))
 
     processed_upload = st.session_state.get("processed_upload")
     if processed_upload is None:
-        st.info("Upload a CSV/TSV file to view normalized data, processing report, and QC summary.")
+        st.info("Upload a CSV/TSV file to view normalized data, processing report, QC summary, and structured interpretation.")
         return
 
     normalized_df = processed_upload.normalized_df
     report = processed_upload.report
     summary = cached_analyze_methylation(normalized_df, signature=_dataframe_signature(normalized_df))
+    panel_df = load_panel(_WORKFLOW_PANEL_PATH)
+    interpretation = structured_interpretation(normalized_df=normalized_df, panel_df=panel_df)
 
     st.subheader("Processing Report")
     col1, col2, col3, col4 = st.columns(4)
@@ -265,7 +280,7 @@ def main() -> None:
         )
         st.dataframe(duplicate_review_df.head(100), width="stretch")
 
-    download_col1, download_col2, download_col3 = st.columns(3)
+    download_col1, download_col2, download_col3, download_col4 = st.columns(4)
     download_col1.download_button(
         "Download normalized CSV",
         data=_normalized_csv_bytes(normalized_df),
@@ -288,6 +303,12 @@ def main() -> None:
         file_name=f"{_artifact_basename(report.source_file)}_processing_report.csv",
         mime="text/csv",
     )
+    download_col4.download_button(
+        "Download interpretation JSON",
+        data=_structured_interpretation_json_bytes(interpretation),
+        file_name=f"{_artifact_basename(report.source_file)}_structured_interpretation.json",
+        mime="application/json",
+    )
 
     st.subheader("Normalized Data (Canonical Schema)")
     st.dataframe(normalized_df.head(100), width="stretch")
@@ -307,6 +328,26 @@ def main() -> None:
     st.caption("Showing beta distribution as a 50-bin histogram for large-file-safe visualization.")
     beta_hist_df = _beta_histogram(normalized_df["beta"], bins=50)
     st.bar_chart(beta_hist_df, x_label="Beta bin", y_label="Count")
+
+    st.subheader("Structured Interpretation (Workflow 01)")
+    observed_data = interpretation["observed_data"]
+    col1, col2, col3 = st.columns(3)
+    col1.metric("Coverage", f"{observed_data['coverage_pct']:.2f}%")
+    col2.metric("Markers found", f"{observed_data['markers_found']}")
+    col3.metric("Markers missing", f"{observed_data['markers_missing']}")
+    st.caption(f"Status: {interpretation['status']}")
+    st.markdown(f"**Interpretation summary:** {interpretation['interpretation']['summary']}")
+    marker_interpretation_df = pd.DataFrame(interpretation["interpretation"]["marker_interpretations"])
+    if marker_interpretation_df.empty:
+        st.info("No panel markers were observed in this upload. Interpretation is limited to coverage only.")
+    else:
+        st.dataframe(marker_interpretation_df, width="stretch", hide_index=True)
+    st.markdown("**Limitations**")
+    for limitation in interpretation["limitations"]:
+        st.write(f"- {limitation}")
+    st.markdown("**Recommended next analytical steps**")
+    for next_step in interpretation["next_steps"]:
+        st.write(f"- {next_step}")
 
 
 if __name__ == "__main__":
