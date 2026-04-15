@@ -11,6 +11,11 @@ import pandas as pd
 import streamlit as st
 from app.ui_config import APP_CAPTION, APP_DESCRIPTION, APP_LAYOUT, APP_TITLE, PAGE_TITLE
 
+from cpg_methylation_mvp.context import (
+    ContextPackage,
+    EvidenceContractError,
+    build_default_workflow_context,
+)
 from cpg_methylation_mvp.core import (
     DEFAULT_DUPLICATE_POLICY,
     DEFAULT_MAX_UPLOAD_BYTES,
@@ -38,6 +43,7 @@ _DUPLICATE_POLICY_HELP = {
     ),
 }
 _WORKFLOW_PANEL_PATH = Path("data/panels/core_demo_panel.csv")
+_WORKFLOW_EVIDENCE_PATH = Path("data/evidence/workflow_01_context_chunks.json")
 _LOGGER = logging.getLogger(__name__)
 
 
@@ -161,6 +167,62 @@ def _parse_warning_messages(report: ProcessingReport) -> list[str]:
     return [warning_messages.get(warning, warning) for warning in report.parse_warnings]
 
 
+def _interpretation_marker_ids(interpretation: dict[str, object]) -> list[str]:
+    """Return observed marker IDs from the structured interpretation object."""
+    interpretation_block = interpretation.get("interpretation", {})
+    if not isinstance(interpretation_block, dict):
+        return []
+
+    marker_rows = interpretation_block.get("marker_interpretations", [])
+    if not isinstance(marker_rows, list):
+        return []
+
+    marker_ids: list[str] = []
+    for marker_row in marker_rows:
+        if isinstance(marker_row, dict):
+            cpg_id = str(marker_row.get("cpg_id", "")).strip()
+            if cpg_id:
+                marker_ids.append(cpg_id)
+    return marker_ids
+
+
+def _context_evidence_table(context_package: ContextPackage) -> pd.DataFrame:
+    """Return retrieved local evidence chunks as a citation-friendly table."""
+    rows = [
+        {
+            "chunk_id": chunk.id,
+            "source": chunk.source,
+            "section": chunk.section or "",
+            "relevance_score": chunk.score,
+            "evidence_text": chunk.text,
+        }
+        for chunk in context_package.retrieved_chunks
+    ]
+    return pd.DataFrame(rows)
+
+
+def _build_context_package(
+    interpretation: dict[str, object],
+    qc_metrics: dict[str, float],
+) -> ContextPackage | None:
+    """Build local cited context without blocking the primary app workflow."""
+    observed_data = interpretation.get("observed_data", {})
+    coverage_status = "unknown"
+    if isinstance(observed_data, dict):
+        coverage_status = str(observed_data.get("coverage_status", "unknown"))
+
+    try:
+        return build_default_workflow_context(
+            markers=_interpretation_marker_ids(interpretation),
+            qc_metrics=qc_metrics,
+            coverage_status=coverage_status,
+            evidence_index_path=_WORKFLOW_EVIDENCE_PATH,
+        )
+    except (EvidenceContractError, FileNotFoundError, json.JSONDecodeError) as error:
+        _LOGGER.warning("workflow_step=local_context status=error detail=%s", str(error))
+        return None
+
+
 def main() -> None:
     """Render the Streamlit app."""
     cached_process_methylation_upload, cached_analyze_methylation = _streamlit_cached_functions()
@@ -215,6 +277,8 @@ def main() -> None:
     summary = cached_analyze_methylation(normalized_df, signature=_dataframe_signature(normalized_df))
     panel_df = load_panel(_WORKFLOW_PANEL_PATH)
     interpretation = structured_interpretation(normalized_df=normalized_df, panel_df=panel_df)
+    observed_data = interpretation["observed_data"]
+    context_package = _build_context_package(interpretation=interpretation, qc_metrics=summary)
 
     st.subheader("Processing Report")
     col1, col2, col3, col4 = st.columns(4)
@@ -331,7 +395,6 @@ def main() -> None:
     st.bar_chart(beta_hist_df, x_label="Beta bin", y_label="Count")
 
     st.subheader("Structured Interpretation (Workflow 01)")
-    observed_data = interpretation["observed_data"]
     col1, col2, col3 = st.columns(3)
     col1.metric("Coverage", f"{observed_data['coverage_pct']:.2f}%")
     col2.metric("Markers found", f"{observed_data['markers_found']}")
@@ -349,6 +412,17 @@ def main() -> None:
     st.markdown("**Recommended next analytical steps**")
     for next_step in interpretation["next_steps"]:
         st.write(f"- {next_step}")
+
+    st.subheader("Cited Context")
+    st.caption("Local workflow, schema, validation, and data-policy sources. Not clinical evidence.")
+    if context_package is None:
+        st.info("Local cited context is unavailable for this run.")
+    else:
+        evidence_table = _context_evidence_table(context_package)
+        if evidence_table.empty:
+            st.info("No local cited context matched this upload summary.")
+        else:
+            st.dataframe(evidence_table, width="stretch", hide_index=True)
 
 
 if __name__ == "__main__":

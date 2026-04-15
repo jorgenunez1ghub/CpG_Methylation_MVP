@@ -1,0 +1,79 @@
+[
+  {
+    "id": "workflow-01-scope",
+    "text": "Workflow 01 supports one delimited methylation upload that is parsed, normalized, validated, evaluated against the curated demo panel, and rendered with explicit limitations.",
+    "source": "docs/workflows/mvp_workflow_01.md",
+    "section": "Scope statement",
+    "metadata": {
+      "evidence_type": "workflow_contract",
+      "claim_scope": "repo_behavior",
+      "allowed_use": "describe_supported_workflow"
+    }
+  },
+  {
+    "id": "schema-beta-contract",
+    "text": "The canonical analytical columns are cpg_id and beta. Beta is numeric and constrained to the range from 0 to 1 before retained-row analysis.",
+    "source": "docs/SCHEMA.md",
+    "section": "Canonical columns",
+    "metadata": {
+      "evidence_type": "schema_contract",
+      "claim_scope": "repo_behavior",
+      "allowed_use": "explain_required_fields"
+    }
+  },
+  {
+    "id": "validation-fails-closed",
+    "text": "Validation uses hard failures for missing required columns, non-numeric beta values, out-of-range beta values, and uploads where no valid analytical rows remain.",
+    "source": "docs/validation_rules.md",
+    "section": "Warning vs hard failure",
+    "metadata": {
+      "evidence_type": "validation_contract",
+      "claim_scope": "repo_behavior",
+      "allowed_use": "explain_failure_behavior"
+    }
+  },
+  {
+    "id": "mixed-delimiter-policy",
+    "text": "Mixed comma and tab delimiters are recorded as a warning when structure remains usable, but inconsistent row structure fails ingestion instead of partially retaining malformed rows.",
+    "source": "docs/validation_rules.md",
+    "section": "Parsing behavior",
+    "metadata": {
+      "evidence_type": "validation_contract",
+      "claim_scope": "repo_behavior",
+      "allowed_use": "explain_delimiter_handling"
+    }
+  },
+  {
+    "id": "duplicate-policy-contract",
+    "text": "Duplicate CpG handling is explicit: rows may be preserved and warned, rejected, or aggregated by mean beta only when optional metadata values do not conflict.",
+    "source": "docs/validation_rules.md",
+    "section": "Warning vs hard failure",
+    "metadata": {
+      "evidence_type": "validation_contract",
+      "claim_scope": "repo_behavior",
+      "allowed_use": "explain_duplicate_handling"
+    }
+  },
+  {
+    "id": "interpretation-limits",
+    "text": "Structured interpretation is bounded to panel coverage and heuristic marker direction. Clinical claims are out of scope for Workflow 01.",
+    "source": "docs/workflows/mvp_workflow_01.md",
+    "section": "Interpretation constraints",
+    "metadata": {
+      "evidence_type": "workflow_contract",
+      "claim_scope": "repo_behavior",
+      "allowed_use": "explain_interpretation_limits"
+    }
+  },
+  {
+    "id": "data-policy-sample-only",
+    "text": "The data directory policy allows only non-sensitive sample, de-identified, public demo, or small reference fixture files in git.",
+    "source": "data/README.md",
+    "section": "Allowed in git",
+    "metadata": {
+      "evidence_type": "data_policy",
+      "claim_scope": "repo_policy",
+      "allowed_use": "explain_data_handling"
+    }
+  }
+]

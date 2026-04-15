@@ -5,6 +5,7 @@ This folder is for **non-sensitive sample data only**.
 ## Allowed in git
 - `data/sample/` files that are synthetic, de-identified, or public demo examples.
 - Small reference fixtures used for local demos/tests.
+- `data/evidence/` local context chunks that cite repo docs and contain no user data.
 
 ## Not allowed in git
 - `data/raw/` source uploads or any real user/patient data.

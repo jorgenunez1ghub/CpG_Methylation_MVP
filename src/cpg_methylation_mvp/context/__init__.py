@@ -6,6 +6,13 @@ and current analytical behavior remain unchanged.
 
 from .builder import build_context
 from .citations import format_citations
+from .evidence import (
+    DEFAULT_EVIDENCE_INDEX_PATH,
+    EvidenceContractError,
+    build_default_workflow_context,
+    dataset_summary_from_qc_metrics,
+    load_evidence_chunks,
+)
 from .retriever import KeywordRetriever, MockRetriever, Retriever
 from .types import Chunk, Citation, ContextPackage, DatasetSummary
 
@@ -13,10 +20,15 @@ __all__ = [
     "Chunk",
     "Citation",
     "ContextPackage",
+    "DEFAULT_EVIDENCE_INDEX_PATH",
     "DatasetSummary",
+    "EvidenceContractError",
     "KeywordRetriever",
     "MockRetriever",
     "Retriever",
     "build_context",
+    "build_default_workflow_context",
+    "dataset_summary_from_qc_metrics",
     "format_citations",
+    "load_evidence_chunks",
 ]

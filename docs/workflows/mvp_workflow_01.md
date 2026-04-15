@@ -7,7 +7,8 @@ This repository currently supports **one defensible end-to-end workflow**:
 2. Parse, normalize, and validate the file into the canonical schema.
 3. Evaluate only against the curated panel in `data/panels/core_demo_panel.csv`.
 4. Produce a structured interpretation object with explicit limitations and next analytical steps.
-5. Render the report in the Streamlit app and allow JSON export.
+5. Retrieve deterministic cited context from local repo evidence chunks.
+6. Render the report in the Streamlit app and allow JSON export.
 
 Out-of-scope behavior is intentionally rejected with clear ingestion errors.
 
@@ -51,6 +52,13 @@ The workflow emits a JSON-friendly object with fixed top-level sections:
   - `intermediate` for `(0.30, 0.70)`
   - `higher` for `>= 0.70`
 - Clinical claims are out of scope.
+
+### Local cited context
+- Source index: `data/evidence/workflow_01_context_chunks.json`
+- Contract: `docs/context/evidence_contract.md`
+- Retrieval is deterministic keyword overlap.
+- Retrieved chunks are repo-local workflow/schema/validation/data-policy context, not clinical evidence.
+- No LLM call, embedding model, or vector database is used in Workflow 01.
 
 ## Operational checks
 - Parse/normalize step outcome is logged in app runtime logs.

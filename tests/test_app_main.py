@@ -3,7 +3,10 @@ import json
 import pandas as pd
 from app.main import (
     _aggregation_audit_csv_bytes,
+    _build_context_package,
+    _context_evidence_table,
     _duplicate_review_csv_bytes,
+    _interpretation_marker_ids,
     _normalized_csv_bytes,
     _processing_report_csv_bytes,
     _processing_report_json,
@@ -81,3 +84,30 @@ def test_processing_report_download_serializers() -> None:
     assert "duplicate_group_row_count" in duplicate_review_csv
     assert "aggregation_rule" in aggregation_audit_csv
     assert '"workflow_id": "mvp_workflow_01"' in interpretation_json
+
+
+def test_context_evidence_helpers_return_cited_rows() -> None:
+    interpretation = {
+        "observed_data": {"coverage_status": "partial"},
+        "interpretation": {
+            "marker_interpretations": [
+                {"cpg_id": "cg000001"},
+                {"cpg_id": "cg000002"},
+            ]
+        },
+    }
+    qc_metrics = {
+        "row_count": 5.0,
+        "missing_beta_pct": 0.0,
+        "beta_min": 0.1,
+        "beta_max": 0.9,
+    }
+
+    marker_ids = _interpretation_marker_ids(interpretation)
+    context_package = _build_context_package(interpretation=interpretation, qc_metrics=qc_metrics)
+
+    assert marker_ids == ["cg000001", "cg000002"]
+    assert context_package is not None
+    evidence_table = _context_evidence_table(context_package)
+    assert {"chunk_id", "source", "section", "relevance_score", "evidence_text"}.issubset(evidence_table.columns)
+    assert not evidence_table.empty

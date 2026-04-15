@@ -4,7 +4,7 @@
 This is the compact handoff context for future agent-assisted work on CpG_Methylation_MVP. Use it to avoid dumping the full repo into a prompt while keeping the important boundaries visible.
 
 ## Product Frame
-- Lightweight Streamlit MVP for CpG methylation upload, validation, normalization, panel coverage, QC, and cautious structured interpretation.
+- Lightweight Streamlit MVP for CpG methylation upload, validation, normalization, panel coverage, QC, cautious structured interpretation, and local cited context.
 - Educational demo only; not medical advice.
 - Current supported workflow is Workflow 01: one delimited methylation upload through canonical validation/QC and structured interpretation output.
 
@@ -24,6 +24,7 @@ This is the compact handoff context for future agent-assisted work on CpG_Methyl
 - `docs/workflows/mvp_workflow_01.md`
 - `docs/SCHEMA.md`
 - `docs/validation_rules.md`
+- `docs/context/evidence_contract.md`
 - `tests/test_architecture_rules.py`
 
 ## Current Verification Gate
@@ -45,8 +46,8 @@ The gate currently checks Python/import readiness, Ruff linting, mypy type check
 - Add hosted smoke automation.
 - Design mixed-delimiter quarantine recovery.
 - Strengthen deterministic QC explanation copy.
-- Decide when the experimental `cpg_methylation_mvp.context` helpers should be connected to a real evidence source.
+- Decide whether the local evidence index should later expand to external scientific sources.
 
 ## Open Risk Notes
-- `cpg_methylation_mvp.context` is packaged and tested, but remains experimental and is not wired into the Streamlit workflow.
+- `cpg_methylation_mvp.context` is wired to local repo evidence only; it is not a scientific literature retrieval system.
 - `docs/DEV_DAY_START.md` previously referenced Make targets before they existed; `Makefile` now supplies the core verification path.

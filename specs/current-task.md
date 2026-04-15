@@ -1,26 +1,27 @@
 # Current Task Spec
 
 ## Goal
-Close the two remaining repo-operating risks from the prior pass: add lint/typecheck gates to verification, and resolve the ambiguous experimental `src/context/` package boundary.
+Close the remaining context-layer risk by defining the citation/evidence contract, adding a local evidence source, and wiring deterministic cited context into the app.
 
 ## Context
-The repo now has `make verify`, `program.md`, a current-task spec, a context pack, and a decision log. The remaining risks were:
-- `make verify` did not yet run lint or type checks,
-- experimental context helpers lived in top-level `src/context/`, outside the installed package, and imported a missing prompt module.
+The repo has `make verify`, `program.md`, a current-task spec, a context pack, a decision log, and package-scoped context helpers. The remaining risks were:
+- `cpg_methylation_mvp.context` was not backed by a concrete evidence source,
+- no evidence/citation contract existed for future RAG work,
+- the context layer was not visible in the app.
 
 ## Constraints
 - Preserve existing app behavior and public core API.
-- Add only dev-time lint/typecheck dependencies.
+- Use only local repo evidence sources.
 - Do not add biomedical, ML, RAG runtime, embedding, vector database, or OpenAI dependencies in this pass.
 - Keep Streamlit-specific logic out of core modules.
-- Keep context helpers out of `cpg_methylation_mvp.core` and out of the current Streamlit workflow.
+- Keep context helpers out of `cpg_methylation_mvp.core`.
+- Do not present local context chunks as clinical evidence.
 
 ## Done When
-- `make verify` runs doctor, lint, typecheck, and tests.
-- Ruff and mypy config lives in `pyproject.toml`.
-- Context helpers live under `src/cpg_methylation_mvp/context/`.
-- Tests cover context helper import/build behavior and package-boundary placement.
-- Docs record the decision and remaining experimental status.
+- `docs/context/evidence_contract.md` defines chunk, citation, retrieval, and display rules.
+- `data/evidence/workflow_01_context_chunks.json` provides local repo-doc context.
+- The app renders cited local context after structured interpretation.
+- Tests cover evidence loading, context building, app table output, and invalid source rejection.
 - `make verify` passes locally.
 
 ## Next Spec Update

@@ -77,3 +77,8 @@ Panel evaluation is intentionally narrow and returns:
 - marker coverage counts and percentage,
 - observed vs missing marker lists,
 - explicit non-clinical limitations.
+
+## Local evidence context contract
+The app also retrieves local cited context from `data/evidence/workflow_01_context_chunks.json`.
+
+Those chunks cite repo docs and are governed by `docs/context/evidence_contract.md`. They are used to orient users to workflow, schema, validation, duplicate handling, data policy, and interpretation limits. They are not a biomedical evidence base.

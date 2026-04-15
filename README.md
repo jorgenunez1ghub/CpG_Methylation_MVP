@@ -22,6 +22,7 @@ This MVP supports one workflow only: one delimited methylation upload is validat
 - Provides downloadable artifacts for normalized data and the processing report (JSON + CSV).
 - Evaluates a small curated demo panel (`data/panels/core_demo_panel.csv`) against normalized uploads and returns a structured coverage report (observed markers, missing markers, coverage status, and explicit limitations).
 - Produces a structured interpretation object that explicitly separates observed data, heuristic directional interpretation, limitations/uncertainty, and next analytical steps.
+- Shows deterministic cited context from local workflow, schema, validation, and data-policy docs without making an LLM call.
 - Shows quick QC outputs for retained analytical rows (unique CpGs, beta statistics, simple chart).
 - Uses Streamlit caching for file parsing and QC summary to reduce rerun work.
 - Renders beta distribution as a compact histogram so large files remain responsive.
@@ -81,6 +82,7 @@ Environment variables (see `.env.example`):
 - `docs/duplicate_aggregation_adr.md`: approved and implemented opt-in aggregation contract for duplicate handling.
 - `docs/duplicate_aggregation_adr_review_memo.md`: review memo backing the duplicate aggregation ADR recommendations.
 - `docs/duplicate_aggregation_stakeholder_brief.md`: stakeholder-facing approval brief and recorded decision for the duplicate aggregation ADR.
+- `docs/context/evidence_contract.md`: local evidence chunk schema, allowed claims, and citation/display contract.
 - `docs/production_readiness_plan.md`: phased production-hardening plan.
 
 ## Deployment docs

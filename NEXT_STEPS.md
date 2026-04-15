@@ -149,11 +149,12 @@ Pick **one** (avoid parallel complexity):
 - Keep explanations deterministic (no LLM required yet)
 
 ### Track B — RAG-Ready Evidence Layer (future AI add-on)
-- Add a `docs/context_pack/` describing:
-  - what evidence sources will be retrieved
-  - how results will be cited
-  - what the model is allowed to claim (guardrails)
-- Keep OpenAI keys optional (placeholders already exist)
+- Extend the current local evidence contract in `docs/context/evidence_contract.md`:
+  - decide which external evidence sources are allowed,
+  - define source freshness and review requirements,
+  - define how citations map from retrieved chunks to source documents,
+  - keep the model claim boundary non-clinical and UNKNOWN-safe.
+- Keep OpenAI keys optional (placeholders already exist).
 
 ### Track C — Export + Session Provenance
 - Add “Export normalized CSV” + “Export QC summary JSON”

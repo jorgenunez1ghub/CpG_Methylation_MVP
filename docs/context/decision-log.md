@@ -54,4 +54,32 @@ Excluded for now:
 ### Consequences
 - `make verify` now fails on lint, typecheck, or test regressions.
 - Future RAG work should import from `cpg_methylation_mvp.context`, not from a top-level `src/context` module.
-- The context package remains experimental until a real evidence source and citation contract are defined.
+- The context package remains local-only until an external evidence source decision is made.
+
+## 2026-04-14 - Wire Local Evidence Context Without LLM Dependencies
+
+### Decision
+Define a local evidence contract, add a repo-doc evidence index, and render deterministic cited context in the Streamlit app.
+
+### Why
+The context package needed a concrete evidence source and citation/display contract before any embedding, vector-store, or LLM-backed interpretation work. A local repo-doc index is the smallest useful source because it grounds current workflow, schema, validation, duplicate, and data-policy guidance without adding scientific claims.
+
+### Scope
+Included:
+- `docs/context/evidence_contract.md`,
+- `data/evidence/workflow_01_context_chunks.json`,
+- evidence contract validation helpers,
+- deterministic Workflow 01 context builder,
+- app rendering for cited local context,
+- tests for evidence loading, context building, app table output, and invalid source rejection.
+
+Excluded for now:
+- external scientific literature sources,
+- embeddings or vector storage,
+- LLM calls,
+- clinical evidence claims.
+
+### Consequences
+- The app now has a cited context section backed by local repo docs.
+- Retrieved context remains repo-policy/workflow evidence, not biomedical evidence.
+- Future external RAG work must extend the evidence contract before adding new sources.

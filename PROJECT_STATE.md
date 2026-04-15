@@ -33,6 +33,7 @@ The near-term objective is to make the repo:
 - `Makefile` with `make doctor`, `make lint`, `make typecheck`, `make test`, `make app-smoke`, and `make verify`
 - Lightweight agent-workflow docs: `program.md`, `specs/current-task.md`, and `docs/context/`
 - Experimental context helpers packaged at `src/cpg_methylation_mvp/context/`
+- Local cited context source at `data/evidence/workflow_01_context_chunks.json`
 
 ### Current app promise
 Upload methylation file → parse → validate → normalize → inspect QC summary.
@@ -65,6 +66,7 @@ Based on repo structure and app code:
 - Upload bytes are cached for rerun efficiency
 - Parsed data is normalized into canonical schema
 - QC summary is generated from normalized dataframe
+- Local cited context is retrieved from repo evidence chunks and rendered in the app
 - Histogram rendering is optimized for large-file-safe visualization
 - Core logic is intended to remain framework-agnostic and separate from Streamlit
 - Repo uses modern Python packaging with `pyproject.toml`
@@ -103,7 +105,7 @@ These guardrails should remain true unless intentionally changed.
 - repo may still be out of sync with local work
 - hosted smoke automation is not yet a regular release gate
 - mixed-delimiter quarantine recovery is not yet designed
-- experimental `cpg_methylation_mvp.context` helpers are packaged and tested but not wired to real evidence sources
+- local cited context is repo-doc based and should not be treated as scientific literature retrieval
 - `NEXT_STEPS.md` is now present; keep it updated as the active re-entry tracker
 - future AI/RAG placeholders exist in config, but not yet implemented
 
@@ -124,12 +126,12 @@ These are the most likely missing or incomplete layers for the next phase.
 - branch and sync discipline between local and GitHub
 - formal ignore rules for local-only uploads / outputs / secrets
 - hosted smoke automation as a repeatable release gate
-- evidence-source and citation-contract decision for the experimental context package
+- external evidence-source decision before adding scientific RAG or LLM-backed interpretation
 
 ### Product gaps
 - biological interpretation layer not yet present
 - no explanation UX for “what these QC results mean”
-- no RAG context layer yet
+- no external RAG context layer yet
 - no audit or provenance view for uploaded files
 - no saved session / export workflow
 

@@ -53,11 +53,14 @@ That command currently runs environment/import checks, Ruff linting, mypy type c
 - Durable context pack: `docs/context/context-pack.md`
 - Decision trail: `docs/context/decision-log.md`
 - Workflow contract: `docs/workflows/mvp_workflow_01.md`
+- Evidence contract: `docs/context/evidence_contract.md`
+- Local evidence index: `data/evidence/workflow_01_context_chunks.json`
 - Release plan: `docs/release_0_1_demo_plan_2026-04-07.md`
 - Experimental context helpers: `src/cpg_methylation_mvp/context/`
 
 ## Change Guardrails
 - Do not add speculative biomedical interpretation.
+- Do not treat local repo evidence chunks as clinical evidence.
 - Do not move business logic into Streamlit.
 - Do not introduce large dependencies without an explicit decision.
 - Do not reduce QC transparency for presentation polish.

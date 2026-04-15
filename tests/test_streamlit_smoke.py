@@ -44,6 +44,7 @@ def test_streamlit_processed_duplicate_state_smoke() -> None:
         "Normalized Data (Canonical Schema)",
         "QC Summary (Retained Rows)",
         "Structured Interpretation (Workflow 01)",
+        "Cited Context",
     ]
     assert any("silent aggregation" in element.value.lower() for element in app_test.warning)
     assert any("unsafe without a defined scientific rule" in element.value.lower() for element in app_test.warning)
@@ -79,6 +80,7 @@ def test_streamlit_processed_aggregated_state_smoke() -> None:
         "Normalized Data (Canonical Schema)",
         "QC Summary (Retained Rows)",
         "Structured Interpretation (Workflow 01)",
+        "Cited Context",
     ]
     assert any("aggregated 1 duplicated cpg_id group" in element.value.lower() for element in app_test.info)
     assert _download_labels(app_test) == [
