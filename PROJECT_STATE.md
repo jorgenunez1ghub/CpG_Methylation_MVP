@@ -30,6 +30,8 @@ The near-term objective is to make the repo:
 - Editable install via `pyproject.toml`
 - `.env.example` present
 - README with quickstart, architecture guardrails, and demo flow
+- `Makefile` with `make doctor`, `make test`, `make app-smoke`, and `make verify`
+- Lightweight agent-workflow docs: `program.md`, `specs/current-task.md`, and `docs/context/`
 
 ### Current app promise
 Upload methylation file → parse → validate → normalize → inspect QC summary.
@@ -98,11 +100,10 @@ These guardrails should remain true unless intentionally changed.
 
 ### Current risks / likely gaps
 - repo may still be out of sync with local work
-- data hygiene rules may not yet be fully enforced
-- schema docs are not yet clearly visible as first-class repo assets
-- tests may exist but likely need expansion
+- hosted smoke automation is not yet a regular release gate
+- mixed-delimiter quarantine recovery is not yet designed
+- experimental `src/context/` helpers need an explicit keep/move/remove decision before RAG work
 - `NEXT_STEPS.md` is now present; keep it updated as the active re-entry tracker
-- no explicit data dictionary / validation contract surfaced for external readers
 - future AI/RAG placeholders exist in config, but not yet implemented
 
 ---
@@ -111,11 +112,9 @@ These guardrails should remain true unless intentionally changed.
 These are the most likely missing or incomplete layers for the next phase.
 
 ### Documentation gaps
-- `DATA_DICTIONARY.md`
-- `SCHEMA.md`
-- `validation_rules.md`
-- `NEXT_STEPS.md`
-- explicit sample file documentation
+- keep `DATA_DICTIONARY.md`, `SCHEMA.md`, and `validation_rules.md` aligned with code behavior
+- keep `NEXT_STEPS.md`, `specs/current-task.md`, and `docs/context/context-pack.md` current as work changes
+- keep sample file documentation aligned with any new edge-case fixtures
 
 ### Engineering gaps
 - stronger tests for parser edge cases
@@ -123,6 +122,8 @@ These are the most likely missing or incomplete layers for the next phase.
 - clearer canonical schema contract
 - branch and sync discipline between local and GitHub
 - formal ignore rules for local-only uploads / outputs / secrets
+- hosted smoke automation as a repeatable release gate
+- explicit decision on the experimental `src/context/` package boundary
 
 ### Product gaps
 - biological interpretation layer not yet present
@@ -154,11 +155,11 @@ This is the current MVP spine and should remain stable while repo hygiene is imp
 ---
 
 ## Next 5 Practical Moves
-### 1. Add data contract docs
-Create:
-- `SCHEMA.md`
-- `DATA_DICTIONARY.md`
-- `validation_rules.md`
+### 1. Keep data contract docs aligned
+Maintain:
+- `docs/SCHEMA.md`
+- `docs/DATA_DICTIONARY.md`
+- `docs/validation_rules.md`
 
 ### 2. Harden repo hygiene
 Confirm `.gitignore` excludes:
@@ -172,8 +173,11 @@ Confirm `.gitignore` excludes:
 - generated reports
 
 ### 3. Add project re-entry docs
-Create:
+Maintain:
+- `program.md`
 - `NEXT_STEPS.md`
+- `specs/current-task.md`
+- `docs/context/context-pack.md`
 - update this `PROJECT_STATE.md` weekly
 
 ### 4. Expand tests

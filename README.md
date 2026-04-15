@@ -28,12 +28,14 @@ This MVP supports one workflow only: one delimited methylation upload is validat
 
 ## Quickstart
 ```bash
-python -m venv .venv
+python3 -m venv .venv
 source .venv/bin/activate
 pip install -e .
 cp .env.example .env
 streamlit run app/main.py
 ```
+
+If your environment maps `python` to Python 3, you can use `python` instead of `python3`.
 
 ## Python version
 - Requires Python `>=3.10` per `pyproject.toml`.
@@ -107,14 +109,22 @@ Environment variables (see `.env.example`):
 ## Run tests
 ```bash
 pip install -e ".[dev]"
-pytest -q
+make verify
 ```
+
+`make verify` runs a lightweight environment/import check and the pytest suite. Use `python3 -m pytest -q` directly when you only need the test run.
 
 ## Clean environment verification
 Once package index access is available, rerun the full editable-install path:
 
 ```bash
 pip install -e ".[dev]"
-pytest -q
+make verify
 streamlit run app/main.py --server.headless true --server.address 127.0.0.1 --server.port 8765
 ```
+
+## Agent workflow docs
+- `program.md`: repo operating model and default verification gate.
+- `specs/current-task.md`: four-field task spec for the current implementation session.
+- `docs/context/context-pack.md`: compact handoff context for future agent-assisted work.
+- `docs/context/decision-log.md`: lightweight decision trail for operating choices.

@@ -109,7 +109,7 @@ Create tests that cover:
   - output schema matches canonical spec
   - QC metrics match expected values (within tolerance)
 
-**Exit condition:** `pytest -q` passes locally and prevents regressions.
+**Exit condition:** `make verify` passes locally and prevents regressions.
 
 ---
 
@@ -192,8 +192,9 @@ Pick **one** (avoid parallel complexity):
 1. `git status`
 2. `git fetch origin`
 3. `git branch -vv`
-4. Open `PROJECT_STATE.md` + this file
-5. Pick **one** step and ship it to a clean commit
+4. Open `program.md`, `PROJECT_STATE.md`, this file, and `specs/current-task.md`
+5. Run `make doctor`
+6. Pick **one** step and ship it to a clean commit
 
 ---
 
