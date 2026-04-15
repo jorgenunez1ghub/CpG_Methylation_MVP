@@ -30,8 +30,9 @@ The near-term objective is to make the repo:
 - Editable install via `pyproject.toml`
 - `.env.example` present
 - README with quickstart, architecture guardrails, and demo flow
-- `Makefile` with `make doctor`, `make test`, `make app-smoke`, and `make verify`
+- `Makefile` with `make doctor`, `make lint`, `make typecheck`, `make test`, `make app-smoke`, and `make verify`
 - Lightweight agent-workflow docs: `program.md`, `specs/current-task.md`, and `docs/context/`
+- Experimental context helpers packaged at `src/cpg_methylation_mvp/context/`
 
 ### Current app promise
 Upload methylation file → parse → validate → normalize → inspect QC summary.
@@ -102,7 +103,7 @@ These guardrails should remain true unless intentionally changed.
 - repo may still be out of sync with local work
 - hosted smoke automation is not yet a regular release gate
 - mixed-delimiter quarantine recovery is not yet designed
-- experimental `src/context/` helpers need an explicit keep/move/remove decision before RAG work
+- experimental `cpg_methylation_mvp.context` helpers are packaged and tested but not wired to real evidence sources
 - `NEXT_STEPS.md` is now present; keep it updated as the active re-entry tracker
 - future AI/RAG placeholders exist in config, but not yet implemented
 
@@ -123,7 +124,7 @@ These are the most likely missing or incomplete layers for the next phase.
 - branch and sync discipline between local and GitHub
 - formal ignore rules for local-only uploads / outputs / secrets
 - hosted smoke automation as a repeatable release gate
-- explicit decision on the experimental `src/context/` package boundary
+- evidence-source and citation-contract decision for the experimental context package
 
 ### Product gaps
 - biological interpretation layer not yet present

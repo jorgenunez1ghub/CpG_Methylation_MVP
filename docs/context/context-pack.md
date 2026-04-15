@@ -33,7 +33,7 @@ Run:
 make verify
 ```
 
-The gate currently checks Python/import readiness and runs `pytest -q`. It intentionally does not include lint, typecheck, or eval targets until those tools are explicitly added to the repo.
+The gate currently checks Python/import readiness, Ruff linting, mypy type checking, and `pytest -q`. It intentionally does not include eval targets or hosted smoke checks until those workflows are explicitly added to the repo.
 
 ## Operating Assumptions
 - Sample data is safe to keep in the repo; raw/private uploads are not.
@@ -45,8 +45,8 @@ The gate currently checks Python/import readiness and runs `pytest -q`. It inten
 - Add hosted smoke automation.
 - Design mixed-delimiter quarantine recovery.
 - Strengthen deterministic QC explanation copy.
-- Decide whether the experimental `src/context/` modules should be completed, moved under the package, or removed from scope.
+- Decide when the experimental `cpg_methylation_mvp.context` helpers should be connected to a real evidence source.
 
 ## Open Risk Notes
-- `src/context/` appears to be an early context/RAG helper area and is not part of the installed `cpg_methylation_mvp` package surface today.
+- `cpg_methylation_mvp.context` is packaged and tested, but remains experimental and is not wired into the Streamlit workflow.
 - `docs/DEV_DAY_START.md` previously referenced Make targets before they existed; `Makefile` now supplies the core verification path.

@@ -112,7 +112,7 @@ pip install -e ".[dev]"
 make verify
 ```
 
-`make verify` runs a lightweight environment/import check and the pytest suite. Use `python3 -m pytest -q` directly when you only need the test run.
+`make verify` runs a lightweight environment/import check, Ruff linting, mypy type checking, and the pytest suite. Use `python3 -m pytest -q` directly when you only need the test run.
 
 ## Clean environment verification
 Once package index access is available, rerun the full editable-install path:

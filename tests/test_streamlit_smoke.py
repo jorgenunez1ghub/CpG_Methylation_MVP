@@ -1,8 +1,8 @@
 from io import BytesIO
 
+from app.ui_config import APP_TITLE
 from streamlit.testing.v1 import AppTest
 
-from app.ui_config import APP_TITLE
 from cpg_methylation_mvp.core import process_methylation_upload
 
 

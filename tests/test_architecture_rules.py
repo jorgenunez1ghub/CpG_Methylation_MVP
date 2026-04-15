@@ -1,6 +1,5 @@
 from pathlib import Path
 
-
 REPO_ROOT = Path(__file__).resolve().parents[1]
 
 
@@ -14,6 +13,15 @@ def test_core_modules_do_not_import_streamlit() -> None:
             violations.append(str(path.relative_to(REPO_ROOT)))
 
     assert not violations, f"core modules importing streamlit: {violations}"
+
+
+def test_experimental_context_helpers_live_inside_package() -> None:
+    top_level_context_dir = REPO_ROOT / "src" / "context"
+    top_level_context_files = list(top_level_context_dir.glob("*.py")) if top_level_context_dir.exists() else []
+    packaged_context_dir = REPO_ROOT / "src" / "cpg_methylation_mvp" / "context"
+
+    assert not top_level_context_files, f"context helpers outside package: {top_level_context_files}"
+    assert packaged_context_dir.exists()
 
 
 def test_streamlit_app_uses_public_core_api() -> None:

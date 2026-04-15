@@ -1,5 +1,5 @@
-from io import BytesIO
 import unittest
+from io import BytesIO
 
 from cpg_methylation_mvp.core.ingest import (
     DEFAULT_MAX_UPLOAD_BYTES,

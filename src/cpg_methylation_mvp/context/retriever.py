@@ -4,13 +4,13 @@ import json
 import re
 from dataclasses import dataclass
 from pathlib import Path
-from typing import List, Protocol
+from typing import Protocol
 
-from src.context.types import Chunk
+from .types import Chunk
 
 
 class Retriever(Protocol):
-    def retrieve(self, query: str, top_k: int) -> List[Chunk]:
+    def retrieve(self, query: str, top_k: int) -> list[Chunk]:
         ...
 
 
@@ -18,9 +18,9 @@ class Retriever(Protocol):
 class MockRetriever:
     """Use for early wiring + tests."""
 
-    canned: List[Chunk]
+    canned: list[Chunk]
 
-    def retrieve(self, query: str, top_k: int) -> List[Chunk]:
+    def retrieve(self, query: str, top_k: int) -> list[Chunk]:
         return self.canned[:top_k]
 
 
@@ -33,12 +33,12 @@ class KeywordRetriever:
 
     chunk_index_path: Path
 
-    def retrieve(self, query: str, top_k: int) -> List[Chunk]:
+    def retrieve(self, query: str, top_k: int) -> list[Chunk]:
         data = json.loads(self.chunk_index_path.read_text(encoding="utf-8"))
-        chunks: List[Chunk] = [Chunk(**item) for item in data]
+        chunks: list[Chunk] = [Chunk(**item) for item in data]
 
         q_terms = _terms(query)
-        scored: List[Chunk] = []
+        scored: list[Chunk] = []
         for c in chunks:
             c_terms = _terms(c.text)
             overlap = len(q_terms.intersection(c_terms))

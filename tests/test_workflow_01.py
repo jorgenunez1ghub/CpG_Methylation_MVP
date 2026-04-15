@@ -7,7 +7,6 @@ import pytest
 
 from cpg_methylation_mvp.core import IngestError, load_panel, process_methylation_upload, structured_interpretation
 
-
 _FIXTURE_DIR = Path("tests/fixtures/workflow_01")
 _PANEL_PATH = Path("data/panels/core_demo_panel.csv")
 

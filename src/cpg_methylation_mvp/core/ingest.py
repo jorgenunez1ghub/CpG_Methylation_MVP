@@ -2,9 +2,9 @@
 
 from __future__ import annotations
 
+import hashlib
 from dataclasses import asdict, dataclass
 from datetime import datetime, timezone
-import hashlib
 from typing import BinaryIO, Literal
 from uuid import uuid4
 
@@ -71,8 +71,8 @@ class ProcessingReport:
     def to_flat_dict(self) -> dict[str, object]:
         """Return a flat dictionary that is easy to write as one CSV row."""
         flattened = self.to_dict()
-        dropped_rows_by_reason = flattened.pop("dropped_rows_by_reason")
-        for reason, count in dropped_rows_by_reason.items():
+        flattened.pop("dropped_rows_by_reason")
+        for reason, count in self.dropped_rows_by_reason.items():
             flattened[f"dropped_rows_{reason}"] = count
         flattened["parse_warnings"] = " | ".join(self.parse_warnings)
         return flattened
@@ -399,7 +399,8 @@ def process_methylation_upload(
         raise IngestError("No file was provided. Upload a CSV/TSV file to continue.")
 
     try:
-        name = source_name or getattr(uploaded_file, "name", "uploaded_file")
+        candidate_name = source_name if source_name is not None else getattr(uploaded_file, "name", "uploaded_file")
+        name = str(candidate_name or "uploaded_file")
         raw_bytes = uploaded_file.read()
         if not raw_bytes:
             raise IngestError("The uploaded file is empty. Please choose a non-empty CSV/TSV file.")

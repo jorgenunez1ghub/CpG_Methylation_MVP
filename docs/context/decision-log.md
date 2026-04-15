@@ -28,4 +28,30 @@ Excluded for now:
 ### Consequences
 - Future work should start by updating `specs/current-task.md`.
 - `make verify` is the default local gate.
-- Any future addition of lint, type checks, hosted smoke tests, or evals should be wired into `make verify` only when the underlying tool is configured and documented.
+- Future hosted smoke tests or evals should be wired into `make verify` only when the underlying tool is configured and documented.
+
+## 2026-04-14 - Add Lint/Typecheck Gate And Package Context Helpers
+
+### Decision
+Add dev-only Ruff and mypy tooling, wire both into `make verify`, and move the experimental context helpers from top-level `src/context/` into `src/cpg_methylation_mvp/context/`.
+
+### Why
+The repo needed deterministic feedback beyond tests, and the context helpers were useful for future RAG/evidence workflows but ambiguous because they lived outside the installable package and imported a missing prompt module.
+
+### Scope
+Included:
+- `ruff`, `mypy`, and `pandas-stubs` as dev dependencies,
+- Ruff and mypy configuration in `pyproject.toml`,
+- `make lint` and `make typecheck`,
+- package-scoped context helpers with a cautious prompt builder,
+- focused context-helper and architecture tests.
+
+Excluded for now:
+- wiring context helpers into the Streamlit app,
+- adding embeddings, vector databases, OpenAI calls, or retrieval dependencies,
+- expanding biomedical interpretation claims.
+
+### Consequences
+- `make verify` now fails on lint, typecheck, or test regressions.
+- Future RAG work should import from `cpg_methylation_mvp.context`, not from a top-level `src/context` module.
+- The context package remains experimental until a real evidence source and citation contract are defined.

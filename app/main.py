@@ -2,14 +2,15 @@
 
 from __future__ import annotations
 
-from io import BytesIO
 import json
 import logging
+from io import BytesIO
 from pathlib import Path
+
 import pandas as pd
 import streamlit as st
-
 from app.ui_config import APP_CAPTION, APP_DESCRIPTION, APP_LAYOUT, APP_TITLE, PAGE_TITLE
+
 from cpg_methylation_mvp.core import (
     DEFAULT_DUPLICATE_POLICY,
     DEFAULT_MAX_UPLOAD_BYTES,

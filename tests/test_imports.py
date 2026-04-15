@@ -18,8 +18,8 @@ def test_public_core_api_imports() -> None:
     from cpg_methylation_mvp.core import (
         DEFAULT_DUPLICATE_POLICY,
         DEFAULT_MAX_UPLOAD_BYTES,
-        DuplicatePolicy,
         PROCESSING_REPORT_VERSION,
+        DuplicatePolicy,
         ProcessedUpload,
         ProcessingReport,
         analyze_methylation,
@@ -55,3 +55,21 @@ def test_streamlit_entrypoint_import_is_safe() -> None:
     import app.main
 
     assert callable(app.main.main)
+
+
+def test_context_helper_api_imports() -> None:
+    from cpg_methylation_mvp.context import (
+        Chunk,
+        DatasetSummary,
+        KeywordRetriever,
+        MockRetriever,
+        build_context,
+        format_citations,
+    )
+
+    assert Chunk.__name__ == "Chunk"
+    assert DatasetSummary.__name__ == "DatasetSummary"
+    assert callable(build_context)
+    assert callable(format_citations)
+    assert KeywordRetriever.__name__ == "KeywordRetriever"
+    assert MockRetriever.__name__ == "MockRetriever"

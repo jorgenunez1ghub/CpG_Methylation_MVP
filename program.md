@@ -44,7 +44,7 @@ The default local gate is:
 make verify
 ```
 
-That command currently runs environment/import checks plus the pytest suite. Add lint, type checks, or evals to `make verify` only after the repo has those tools configured.
+That command currently runs environment/import checks, Ruff linting, mypy type checking, and the pytest suite. Add evals or hosted smoke checks to `make verify` only after those tools are explicitly configured.
 
 ## Source Of Truth Map
 - Product state: `PROJECT_STATE.md`
@@ -54,6 +54,7 @@ That command currently runs environment/import checks plus the pytest suite. Add
 - Decision trail: `docs/context/decision-log.md`
 - Workflow contract: `docs/workflows/mvp_workflow_01.md`
 - Release plan: `docs/release_0_1_demo_plan_2026-04-07.md`
+- Experimental context helpers: `src/cpg_methylation_mvp/context/`
 
 ## Change Guardrails
 - Do not add speculative biomedical interpretation.

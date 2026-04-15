@@ -4,9 +4,9 @@ from .analyze import analyze_methylation, qc_summary
 from .ingest import (
     DEFAULT_DUPLICATE_POLICY,
     DEFAULT_MAX_UPLOAD_BYTES,
+    PROCESSING_REPORT_VERSION,
     DuplicatePolicy,
     IngestError,
-    PROCESSING_REPORT_VERSION,
     ProcessedUpload,
     ProcessingReport,
     duplicate_review_table,
@@ -15,7 +15,7 @@ from .ingest import (
 )
 from .panels import evaluate_panel, load_panel, panel_report_table, structured_interpretation
 from .transform import canonicalize_columns, normalize_upload, select_canonical_columns
-from .validate import ValidationError, ValidationConfig, validate_upload
+from .validate import ValidationConfig, ValidationError, validate_upload
 
 __all__ = [
     "DEFAULT_DUPLICATE_POLICY",

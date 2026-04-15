@@ -1,15 +1,13 @@
 from __future__ import annotations
 
-from typing import List, Optional
-
-from src.context.citations import format_citations
-from src.context.prompts import SYSTEM_PROMPT, build_user_message
-from src.context.retriever import Retriever
-from src.context.types import Chunk, ContextPackage, DatasetSummary
+from .citations import format_citations
+from .prompts import SYSTEM_PROMPT, build_user_message
+from .retriever import Retriever
+from .types import Chunk, ContextPackage, DatasetSummary
 
 
 def build_context(
-    markers: List[str],
+    markers: list[str],
     dataset_summary: DatasetSummary,
     retriever: Retriever,
     top_k: int = 5,
@@ -40,14 +38,14 @@ def build_context(
     )
 
 
-def _build_query(markers: List[str], summary: DatasetSummary) -> str:
+def _build_query(markers: list[str], summary: DatasetSummary) -> str:
     markers_part = ", ".join(markers[:25])  # avoid massive queries
     platform_part = f" platform={summary.platform}" if summary.platform else ""
     return f"DNA methylation educational interpretation markers: {markers_part}.{platform_part}"
 
 
-def _trim_chunks(chunks: List[Chunk], max_chunk_chars: int) -> List[Chunk]:
-    out: List[Chunk] = []
+def _trim_chunks(chunks: list[Chunk], max_chunk_chars: int) -> list[Chunk]:
+    out: list[Chunk] = []
     for c in chunks:
         text = c.text.strip()
         if len(text) > max_chunk_chars:
@@ -61,12 +59,12 @@ def _estimate_tokens(text: str) -> int:
     return max(1, int(len(text) / 4))
 
 
-def _validate_inputs(markers: List[str], summary: DatasetSummary) -> None:
+def _validate_inputs(markers: list[str], summary: DatasetSummary) -> None:
     if summary.row_count < 0:
         raise ValueError("row_count must be >= 0")
     if not (0.0 <= summary.missing_pct <= 100.0):
         raise ValueError("missing_pct must be in [0, 100]")
-    # Guardrail: markers should be simple strings (avoid prompt injection via markers list)
+    # Guardrail: markers should be simple strings to reduce prompt injection risk.
     for m in markers:
         if len(m) > 120:
             raise ValueError("Marker name too long.")

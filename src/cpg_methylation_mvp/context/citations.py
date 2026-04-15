@@ -1,14 +1,12 @@
 from __future__ import annotations
 
-from typing import List
-
-from src.context.types import Citation, Chunk
+from .types import Chunk, Citation
 
 
-def format_citations(chunks: List[Chunk]) -> List[Citation]:
+def format_citations(chunks: list[Chunk]) -> list[Citation]:
     # Keep all citations, but de-duplicate exact (source, chunk_id)
     seen = set()
-    out: List[Citation] = []
+    out: list[Citation] = []
     for c in chunks:
         key = (c.source, c.id)
         if key in seen:

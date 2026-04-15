@@ -1,32 +1,26 @@
 # Current Task Spec
 
 ## Goal
-Add a lightweight agent-workflow operating layer that helps future work start with clear context and end with deterministic verification.
+Close the two remaining repo-operating risks from the prior pass: add lint/typecheck gates to verification, and resolve the ambiguous experimental `src/context/` package boundary.
 
 ## Context
-The repo already has strong project-state, next-step, workflow, schema, validation, and release docs. The missing practical pieces were:
-- a single local verification command,
-- a concise root-level program wrapper,
-- a durable context pack for future agent sessions,
-- a decision log for repo-operating choices.
-
-Remote GitHub state checked on 2026-04-14:
-- local `main` matched `origin/main`,
-- no open PRs,
-- no open issues.
+The repo now has `make verify`, `program.md`, a current-task spec, a context pack, and a decision log. The remaining risks were:
+- `make verify` did not yet run lint or type checks,
+- experimental context helpers lived in top-level `src/context/`, outside the installed package, and imported a missing prompt module.
 
 ## Constraints
 - Preserve existing app behavior and public core API.
-- Do not add biomedical, ML, RAG, or lint/typecheck dependencies in this pass.
+- Add only dev-time lint/typecheck dependencies.
+- Do not add biomedical, ML, RAG runtime, embedding, vector database, or OpenAI dependencies in this pass.
 - Keep Streamlit-specific logic out of core modules.
-- Keep artifacts short enough to be useful as handoff context.
+- Keep context helpers out of `cpg_methylation_mvp.core` and out of the current Streamlit workflow.
 
 ## Done When
-- `Makefile` provides `make verify`.
-- `program.md` explains the repo operating model.
-- `docs/context/context-pack.md` captures the minimal handoff context.
-- `docs/context/decision-log.md` records the operating decision.
-- README and daily dev docs point to the verification command.
+- `make verify` runs doctor, lint, typecheck, and tests.
+- Ruff and mypy config lives in `pyproject.toml`.
+- Context helpers live under `src/cpg_methylation_mvp/context/`.
+- Tests cover context helper import/build behavior and package-boundary placement.
+- Docs record the decision and remaining experimental status.
 - `make verify` passes locally.
 
 ## Next Spec Update
