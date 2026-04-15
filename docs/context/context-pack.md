@@ -25,6 +25,7 @@ This is the compact handoff context for future agent-assisted work on CpG_Methyl
 - `docs/SCHEMA.md`
 - `docs/validation_rules.md`
 - `docs/context/evidence_contract.md`
+- `docs/context/external_scientific_rag_policy.md`
 - `tests/test_architecture_rules.py`
 
 ## Current Verification Gate
@@ -46,8 +47,9 @@ The gate currently checks Python/import readiness, Ruff linting, mypy type check
 - Add hosted smoke automation.
 - Design mixed-delimiter quarantine recovery.
 - Strengthen deterministic QC explanation copy.
-- Decide whether the local evidence index should later expand to external scientific sources.
+- Before external scientific retrieval, create a reviewed source registry that satisfies `data/evidence/external_source_policy.json`.
 
 ## Open Risk Notes
 - `cpg_methylation_mvp.context` is wired to local repo evidence only; it is not a scientific literature retrieval system.
+- External scientific RAG remains runtime-disabled by policy until source review and citation requirements are implemented.
 - `docs/DEV_DAY_START.md` previously referenced Make targets before they existed; `Makefile` now supplies the core verification path.

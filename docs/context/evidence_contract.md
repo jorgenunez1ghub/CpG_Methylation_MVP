@@ -10,6 +10,13 @@ This layer supports deterministic, cited orientation for the current MVP. It is 
 - Source files are local repo documents such as workflow, schema, validation, and data-policy docs.
 - Each chunk must cite an existing source path and section.
 
+## External Scientific Evidence Gate
+External scientific retrieval is governed by:
+- `docs/context/external_scientific_rag_policy.md`
+- `data/evidence/external_source_policy.json`
+
+External scientific RAG is disabled until that policy is extended with a reviewed source registry and an explicit runtime-use decision.
+
 ## Chunk Schema
 Each evidence chunk is a JSON object with:
 

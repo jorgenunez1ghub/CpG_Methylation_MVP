@@ -83,6 +83,7 @@ Environment variables (see `.env.example`):
 - `docs/duplicate_aggregation_adr_review_memo.md`: review memo backing the duplicate aggregation ADR recommendations.
 - `docs/duplicate_aggregation_stakeholder_brief.md`: stakeholder-facing approval brief and recorded decision for the duplicate aggregation ADR.
 - `docs/context/evidence_contract.md`: local evidence chunk schema, allowed claims, and citation/display contract.
+- `docs/context/external_scientific_rag_policy.md`: source, freshness, review, and citation gate for future external scientific RAG.
 - `docs/production_readiness_plan.md`: phased production-hardening plan.
 
 ## Deployment docs

@@ -60,6 +60,7 @@ def test_streamlit_entrypoint_import_is_safe() -> None:
 def test_context_helper_api_imports() -> None:
     from cpg_methylation_mvp.context import (
         DEFAULT_EVIDENCE_INDEX_PATH,
+        DEFAULT_EXTERNAL_SOURCE_POLICY_PATH,
         Chunk,
         DatasetSummary,
         EvidenceContractError,
@@ -69,9 +70,11 @@ def test_context_helper_api_imports() -> None:
         build_default_workflow_context,
         format_citations,
         load_evidence_chunks,
+        load_external_source_policy,
     )
 
     assert DEFAULT_EVIDENCE_INDEX_PATH.name == "workflow_01_context_chunks.json"
+    assert DEFAULT_EXTERNAL_SOURCE_POLICY_PATH.name == "external_source_policy.json"
     assert Chunk.__name__ == "Chunk"
     assert DatasetSummary.__name__ == "DatasetSummary"
     assert EvidenceContractError.__name__ == "EvidenceContractError"
@@ -79,5 +82,6 @@ def test_context_helper_api_imports() -> None:
     assert callable(build_default_workflow_context)
     assert callable(format_citations)
     assert callable(load_evidence_chunks)
+    assert callable(load_external_source_policy)
     assert KeywordRetriever.__name__ == "KeywordRetriever"
     assert MockRetriever.__name__ == "MockRetriever"

@@ -83,3 +83,30 @@ Excluded for now:
 - The app now has a cited context section backed by local repo docs.
 - Retrieved context remains repo-policy/workflow evidence, not biomedical evidence.
 - Future external RAG work must extend the evidence contract before adding new sources.
+
+## 2026-04-14 - Define External Scientific RAG Source Gate
+
+### Decision
+Add an external scientific RAG policy and machine-readable source rules without enabling external retrieval at runtime.
+
+### Why
+External scientific retrieval needs source quality, freshness, review, and citation rules before implementation. The repo should not add embeddings, vector storage, or LLM-backed interpretation until those rules are enforceable.
+
+### Scope
+Included:
+- `docs/context/external_scientific_rag_policy.md`,
+- `data/evidence/external_source_policy.json`,
+- policy validation in `cpg_methylation_mvp.context`,
+- tests proving the policy exists and runtime use remains disabled until approved.
+
+Excluded for now:
+- external source registry,
+- external fetching,
+- embeddings/vector database,
+- LLM calls,
+- clinical or marker actionability claims.
+
+### Consequences
+- Future scientific RAG work must create a reviewed source registry before enabling runtime use.
+- `runtime_enabled` must remain `false` until an explicit implementation decision updates the policy and tests.
+- Citations for external chunks must include locator, freshness, review, claim-scope, and limitation fields.

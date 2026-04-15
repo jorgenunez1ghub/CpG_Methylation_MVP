@@ -11,6 +11,7 @@ from cpg_methylation_mvp.context import (
     build_context,
     build_default_workflow_context,
     load_evidence_chunks,
+    load_external_source_policy,
 )
 
 
@@ -145,3 +146,62 @@ def test_evidence_contract_rejects_missing_source(tmp_path) -> None:
         assert "source does not exist" in str(error)
     else:
         raise AssertionError("Expected missing local source to fail the evidence contract")
+
+
+def test_external_source_policy_defines_rag_gate() -> None:
+    policy = load_external_source_policy()
+    source_type_ids = {source_type["id"] for source_type in policy["allowed_source_types"]}
+
+    assert policy["runtime_enabled"] is False
+    assert source_type_ids == {
+        "peer_reviewed_primary_study",
+        "systematic_review_or_meta_analysis",
+        "official_database_record",
+        "official_guidance_or_reference",
+    }
+    assert "unreviewed_llm_output" in policy["disallowed_source_types"]
+    assert {"chunk_id", "source_type", "retrieved_at", "reviewed_at", "limitations"}.issubset(
+        set(policy["citation_requirements"])
+    )
+    assert policy["review_gate"]["review_required_before_runtime_use"] is True
+    assert policy["review_gate"]["source_registry_required"] is True
+
+
+def test_external_source_policy_rejects_runtime_enabled_without_approval(tmp_path) -> None:
+    policy_path = tmp_path / "external_policy.json"
+    policy_path.write_text(
+        json.dumps(
+            {
+                "policy_version": "0.1",
+                "status": "planning_contract_only",
+                "runtime_enabled": True,
+                "allowed_source_types": [
+                    {
+                        "id": "peer_reviewed_primary_study",
+                        "label": "Peer-reviewed primary study",
+                        "allowed_uses": ["background_context"],
+                        "required_metadata": ["title"],
+                        "freshness": {
+                            "metadata_verified_within_days": 180,
+                            "content_review_expires_after_days": 365,
+                        },
+                    }
+                ],
+                "disallowed_source_types": ["unreviewed_llm_output"],
+                "citation_requirements": ["chunk_id"],
+                "claim_boundaries": ["No diagnosis."],
+                "review_gate": {
+                    "review_required_before_runtime_use": True,
+                    "source_registry_required": True,
+                },
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    try:
+        load_external_source_policy(policy_path=policy_path)
+    except EvidenceContractError as error:
+        assert "runtime_enabled false" in str(error)
+    else:
+        raise AssertionError("Expected runtime-enabled external RAG policy to fail without approval")

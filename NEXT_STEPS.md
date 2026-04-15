@@ -149,10 +149,10 @@ Pick **one** (avoid parallel complexity):
 - Keep explanations deterministic (no LLM required yet)
 
 ### Track B — RAG-Ready Evidence Layer (future AI add-on)
-- Extend the current local evidence contract in `docs/context/evidence_contract.md`:
-  - decide which external evidence sources are allowed,
-  - define source freshness and review requirements,
-  - define how citations map from retrieved chunks to source documents,
+- Implement the external evidence gate already defined in `docs/context/external_scientific_rag_policy.md`:
+  - create a reviewed external source registry,
+  - reject stale or incomplete sources in tests,
+  - map retrieved chunks to required citation fields,
   - keep the model claim boundary non-clinical and UNKNOWN-safe.
 - Keep OpenAI keys optional (placeholders already exist).
 

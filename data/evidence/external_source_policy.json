@@ -1,0 +1,132 @@
+{
+  "policy_version": "0.1",
+  "status": "planning_contract_only",
+  "runtime_enabled": false,
+  "allowed_source_types": [
+    {
+      "id": "peer_reviewed_primary_study",
+      "label": "Peer-reviewed primary study",
+      "allowed_uses": [
+        "background_context",
+        "candidate_marker_discussion"
+      ],
+      "required_metadata": [
+        "title",
+        "authors",
+        "journal_or_publisher",
+        "publication_date",
+        "doi_or_pmid",
+        "url",
+        "retrieved_at",
+        "reviewed_by",
+        "reviewed_at",
+        "limitations"
+      ],
+      "freshness": {
+        "metadata_verified_within_days": 180,
+        "content_review_expires_after_days": 365
+      }
+    },
+    {
+      "id": "systematic_review_or_meta_analysis",
+      "label": "Systematic review or meta-analysis",
+      "allowed_uses": [
+        "background_context",
+        "evidence_summary"
+      ],
+      "required_metadata": [
+        "title",
+        "authors",
+        "journal_or_publisher",
+        "publication_date",
+        "doi_or_pmid",
+        "url",
+        "retrieved_at",
+        "reviewed_by",
+        "reviewed_at",
+        "limitations"
+      ],
+      "freshness": {
+        "metadata_verified_within_days": 180,
+        "content_review_expires_after_days": 365
+      }
+    },
+    {
+      "id": "official_database_record",
+      "label": "Official database or registry record",
+      "allowed_uses": [
+        "identifier_lookup",
+        "annotation_context"
+      ],
+      "required_metadata": [
+        "record_id",
+        "database_name",
+        "record_url",
+        "record_version_or_accessed_date",
+        "retrieved_at",
+        "reviewed_by",
+        "reviewed_at",
+        "limitations"
+      ],
+      "freshness": {
+        "metadata_verified_within_days": 90,
+        "content_review_expires_after_days": 180
+      }
+    },
+    {
+      "id": "official_guidance_or_reference",
+      "label": "Official guidance or reference material",
+      "allowed_uses": [
+        "terminology_context",
+        "methodology_context",
+        "non_clinical_limitations"
+      ],
+      "required_metadata": [
+        "title",
+        "issuing_organization",
+        "publication_or_revision_date",
+        "url",
+        "retrieved_at",
+        "reviewed_by",
+        "reviewed_at",
+        "limitations"
+      ],
+      "freshness": {
+        "metadata_verified_within_days": 90,
+        "content_review_expires_after_days": 180
+      }
+    }
+  ],
+  "disallowed_source_types": [
+    "uncited_blog_or_marketing_page",
+    "forum_or_social_media_post",
+    "unreviewed_llm_output",
+    "patient_specific_record",
+    "paywalled_source_without_reviewable_metadata"
+  ],
+  "citation_requirements": [
+    "chunk_id",
+    "source_type",
+    "source_title_or_record_id",
+    "source_locator",
+    "publication_or_revision_date",
+    "retrieved_at",
+    "reviewed_at",
+    "reviewed_by",
+    "claim_scope",
+    "limitations"
+  ],
+  "claim_boundaries": [
+    "No diagnosis, treatment, or medical advice.",
+    "No clinical actionability claims.",
+    "No risk prediction claims.",
+    "No marker significance claims without cited source support.",
+    "Unsupported or weakly supported claims must be labeled unknown."
+  ],
+  "review_gate": {
+    "review_required_before_runtime_use": true,
+    "review_notes_required": true,
+    "source_registry_required": true,
+    "minimum_sources_for_marker_claim": 1
+  }
+}

@@ -34,6 +34,7 @@ The near-term objective is to make the repo:
 - Lightweight agent-workflow docs: `program.md`, `specs/current-task.md`, and `docs/context/`
 - Experimental context helpers packaged at `src/cpg_methylation_mvp/context/`
 - Local cited context source at `data/evidence/workflow_01_context_chunks.json`
+- External scientific RAG policy at `docs/context/external_scientific_rag_policy.md`
 
 ### Current app promise
 Upload methylation file → parse → validate → normalize → inspect QC summary.
@@ -126,12 +127,12 @@ These are the most likely missing or incomplete layers for the next phase.
 - branch and sync discipline between local and GitHub
 - formal ignore rules for local-only uploads / outputs / secrets
 - hosted smoke automation as a repeatable release gate
-- external evidence-source decision before adding scientific RAG or LLM-backed interpretation
+- reviewed external source registry before adding scientific RAG or LLM-backed interpretation
 
 ### Product gaps
 - biological interpretation layer not yet present
 - no explanation UX for “what these QC results mean”
-- no external RAG context layer yet
+- no external RAG runtime yet; policy gate exists and keeps runtime disabled
 - no audit or provenance view for uploaded files
 - no saved session / export workflow
 
