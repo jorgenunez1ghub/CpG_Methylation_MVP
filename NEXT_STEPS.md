@@ -200,11 +200,9 @@ Pick **one** (avoid parallel complexity):
 ---
 
 ## Current Top 3 Next Actions
-1. **Review and merge the duplicate-aggregation implementation branch**
-   Deliverables: verify the implementation stays aligned to `docs/duplicate_aggregation_adr.md`, review the new report/audit disclosure surfaces, and merge a narrow core-first PR without expanding scope.
-2. **Add a deliberate hosted smoke automation track**
-   Deliverables: one chosen browser stack, one deployed smoke workflow, and a non-blocking first CI pass over the hosted URL.
-3. **Design mixed-delimiter quarantine recovery**
-   Deliverables: explicit pre-normalization/quarantine workflow, user-visible quarantine counts, and tests that prove recovery is not silent.
-
-(These are the highest-value follow-on steps now that duplicate aggregation, duplicate audit disclosure, ingestion hardening, duplicate review, and local Streamlit smoke coverage are in place.)
+1. **Hosted smoke automation/checklist**  
+   Deliverables: document repeatable hosted smoke steps, capture pass/fail evidence, and add a lightweight non-blocking automation path when feasible.
+2. **Mixed-delimiter quarantine recovery design**  
+   Deliverables: define quarantine/reporting behavior, preserve fail-closed handling for inconsistent structures, and add focused ingestion tests.
+3. **Release tag and evidence package**  
+   Deliverables: finalize demo script artifacts, readiness checklist evidence, known issues log, and prepare Release 0.1 handoff materials.
