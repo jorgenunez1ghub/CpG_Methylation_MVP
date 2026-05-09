@@ -25,6 +25,7 @@ from cpg_methylation_mvp.core import (
     ProcessingReport,
     analyze_methylation,
     duplicate_review_table,
+    explain_qc_summary,
     load_panel,
     process_methylation_upload,
     structured_interpretation,
@@ -389,6 +390,21 @@ def main() -> None:
         f"**Beta stats:** min={summary['beta_min']:.3f}, "
         f"median={summary['beta_median']:.3f}, max={summary['beta_max']:.3f}"
     )
+
+    qc_explanation = explain_qc_summary(summary=summary, report=report)
+    st.markdown("**What this QC summary means**")
+    st.markdown("**Observed data**")
+    for item in qc_explanation["observed_data"]:
+        st.write(f"- {item}")
+    st.markdown("**Possible meaning**")
+    for item in qc_explanation["possible_meaning"]:
+        st.write(f"- {item}")
+    st.markdown("**Limitations**")
+    for item in qc_explanation["limitations"]:
+        st.write(f"- {item}")
+    st.markdown("**Recommended next steps**")
+    for item in qc_explanation["next_steps"]:
+        st.write(f"- {item}")
 
     st.caption("Showing beta distribution as a 50-bin histogram for large-file-safe visualization.")
     beta_hist_df = _beta_histogram(normalized_df["beta"], bins=50)
